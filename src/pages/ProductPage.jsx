@@ -10,41 +10,67 @@ const ProductDetails = () => {
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-const [currentUser, setCurrentUser] = useState(null);
-const [cartItems, setCartItems] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [cartItems, setCartItems] = useState([]);
+  const [wishlistItems, setWishlistItems] = useState([]);
 
-useEffect(() => {
-  const storedUser = localStorage.getItem("user");
-  if (storedUser) {
-    try {
-      const parsedUser = JSON.parse(storedUser);
-      setCurrentUser(parsedUser.email);
-      setIsLoggedIn(true);
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setCurrentUser(parsedUser.email);
+        setIsLoggedIn(true);
 
-      const savedCart = JSON.parse(localStorage.getItem(`cart_${parsedUser.email}`)) || [];
+        // Handle cart merging
+        const savedCart = JSON.parse(localStorage.getItem(`cart_${parsedUser.email}`)) || [];
+        const guestCart = JSON.parse(localStorage.getItem("cart_guest")) || [];
+
+        const mergedCart = [...savedCart];
+        guestCart.forEach((guestItem) => {
+          const index = mergedCart.findIndex(item => item.id === guestItem.id);
+          if (index !== -1) {
+            mergedCart[index].quantity += guestItem.quantity;
+          } else {
+            mergedCart.push(guestItem);
+          }
+        });
+
+        localStorage.setItem(`cart_${parsedUser.email}`, JSON.stringify(mergedCart));
+        localStorage.removeItem("cart_guest");
+        setCartItems(mergedCart);
+
+        // Handle wishlist merging
+        const savedWishlist = JSON.parse(localStorage.getItem(`wishlist_${parsedUser.email}`)) || [];
+        const guestWishlist = JSON.parse(localStorage.getItem("wishlist_guest")) || [];
+
+        const mergedWishlist = [...savedWishlist];
+        guestWishlist.forEach((guestItem) => {
+          const exists = mergedWishlist.find(item => item.id === guestItem.id);
+          if (!exists) {
+            mergedWishlist.push(guestItem);
+          }
+        });
+
+        localStorage.setItem(`wishlist_${parsedUser.email}`, JSON.stringify(mergedWishlist));
+        localStorage.removeItem("wishlist_guest");
+        setWishlistItems(mergedWishlist);
+
+      } catch (err) {
+        console.error("Failed to parse user/cart/wishlist", err);
+        setCurrentUser(null);
+        setCartItems([]);
+        setWishlistItems([]);
+      }
+    } else {
+      // Load guest cart and wishlist
       const guestCart = JSON.parse(localStorage.getItem("cart_guest")) || [];
-
-      const mergedCart = [...savedCart];
-      guestCart.forEach((guestItem) => {
-        const index = mergedCart.findIndex(item => item.id === guestItem.id);
-        if (index !== -1) {
-          mergedCart[index].quantity += guestItem.quantity;
-        } else {
-          mergedCart.push(guestItem);
-        }
-      });
-
-      localStorage.setItem(`cart_${parsedUser.email}`, JSON.stringify(mergedCart));
-      localStorage.removeItem("cart_guest");
-      setCartItems(mergedCart);
-
-    } catch (err) {
-      console.error("Failed to parse user/cart", err);
-      setCurrentUser(null);
-      setCartItems([]);
+      const guestWishlist = JSON.parse(localStorage.getItem("wishlist_guest")) || [];
+      setCartItems(guestCart);
+      setWishlistItems(guestWishlist);
     }
-  }
-}, []);
+  }, []);
+
   const allProducts = [
     {
       id: 101,
@@ -95,7 +121,7 @@ useEffect(() => {
         "Anti-Slip Pads",
         "Supports up to 17'' Laptops"
       ],
-      image: "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=600&auto=format&fit=crop&q=60"
+      image: "https://images.unsplash.com/photo-1527864550417-7fd91fc51ca8?w=600&auto=format&fit=crop&q=60"
     },
     {
       id: 104,
@@ -281,7 +307,8 @@ useEffect(() => {
         "Transparency Mode",
         "MagSafe Charging",
         "Custom Fit Ear Tips"
-      ],  image: "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=600&auto=format&fit=crop&q=60"
+      ],
+      image: "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=600&auto=format&fit=crop&q=60"
     }
   ];
 
@@ -292,7 +319,13 @@ useEffect(() => {
     if (!foundProduct) return navigate('/not-found');
 
     setProduct(foundProduct);
-  }, [id, navigate]);
+
+    // Check if current product is in wishlist
+    const wishlistKey = isLoggedIn && currentUser ? `wishlist_${currentUser}` : "wishlist_guest";
+    const currentWishlist = JSON.parse(localStorage.getItem(wishlistKey)) || [];
+    const isProductWishlisted = currentWishlist.some(item => item.id === foundProduct.id);
+    setIsWishlisted(isProductWishlisted);
+  }, [id, navigate, isLoggedIn, currentUser]);
 
   const handleQuantityChange = (change) => {
     setQuantity(Math.max(1, quantity + change));
@@ -317,28 +350,52 @@ useEffect(() => {
       </div>
     );
   }
- const handleAddToCart = (product) => {
-  const cartKey = isLoggedIn && currentUser ? `cart_${currentUser}` : "cart_guest";
-  const existingCart = JSON.parse(localStorage.getItem(cartKey)) || [];
 
-  const existingItemIndex = existingCart.findIndex((item) => item.id === product.id);
+  const handleAddToCart = (product) => {
+    const cartKey = isLoggedIn && currentUser ? `cart_${currentUser}` : "cart_guest";
+    const existingCart = JSON.parse(localStorage.getItem(cartKey)) || [];
 
-  let updatedCart;
-  if (existingItemIndex !== -1) {
-    updatedCart = existingCart.map((item) =>
-      item.id === product.id
-        ? { ...item, quantity: item.quantity + 1 }
-        : item
-    );
-  } else {
-    updatedCart = [...existingCart, { ...product, quantity: 1 }];
-  }
+    const existingItemIndex = existingCart.findIndex((item) => item.id === product.id);
 
-  localStorage.setItem(cartKey, JSON.stringify(updatedCart));
-  setCartItems(updatedCart);
+    let updatedCart;
+    if (existingItemIndex !== -1) {
+      updatedCart = existingCart.map((item) =>
+        item.id === product.id
+          ? { ...item, quantity: item.quantity + quantity }
+          : item
+      );
+    } else {
+      updatedCart = [...existingCart, { ...product, quantity: quantity }];
+    }
 
-  toast.success(`${product.name} has been added to your cart`);
-};
+    localStorage.setItem(cartKey, JSON.stringify(updatedCart));
+    setCartItems(updatedCart);
+
+    toast.success(`${product.name} has been added to your cart`);
+  };
+
+  const handleToggleWishlist = (product) => {
+    const wishlistKey = isLoggedIn && currentUser ? `wishlist_${currentUser}` : "wishlist_guest";
+    const existingWishlist = JSON.parse(localStorage.getItem(wishlistKey)) || [];
+
+    const isCurrentlyWishlisted = existingWishlist.some(item => item.id === product.id);
+    
+    let updatedWishlist;
+    if (isCurrentlyWishlisted) {
+      // Remove from wishlist
+      updatedWishlist = existingWishlist.filter(item => item.id !== product.id);
+      setIsWishlisted(false);
+      toast.success(`${product.name} has been removed from your wishlist`);
+    } else {
+      // Add to wishlist
+      updatedWishlist = [...existingWishlist, product];
+      setIsWishlisted(true);
+      toast.success(`${product.name} has been added to your wishlist`);
+    }
+
+    localStorage.setItem(wishlistKey, JSON.stringify(updatedWishlist));
+    setWishlistItems(updatedWishlist);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
@@ -353,7 +410,7 @@ useEffect(() => {
                 className="w-full h-96 lg:h-[500px] object-cover transition-transform duration-300 hover:scale-105"
               />
               <button
-                onClick={() => setIsWishlisted(!isWishlisted)}
+                onClick={() => handleToggleWishlist(product)}
                 className={`absolute top-4 right-4 p-2 rounded-full backdrop-blur-sm ${
                   isWishlisted ? 'bg-red-100 text-red-500' : 'bg-white/80 text-gray-600'
                 } hover:scale-110 transition-all duration-200`}
@@ -419,7 +476,7 @@ useEffect(() => {
             {/* Action Buttons */}
             <div className="flex gap-4">
               <button
-               onClick={() => handleAddToCart(product)}
+                onClick={() => handleAddToCart(product)}
                 disabled={product.stock === 0}
                 className={`flex items-center justify-center gap-2 flex-1 h-12 text-white rounded-lg transition ${
                   product.stock === 0
