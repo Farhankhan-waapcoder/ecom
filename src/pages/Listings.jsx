@@ -14,7 +14,29 @@ export default function Listings() {
   const [cartItems, setCartItems] = useState([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+   const toggleLogin = () => {
+    setShowForgot(false);
+    setShowRegister(false);
+    setShowLogin(true);
+  };
 
+  const toggleForgot = () => {
+    setShowLogin(false);
+    setShowRegister(false);
+    setShowForgot(true);
+  };
+
+  const toggleRegister = () => {
+    setShowRegister(true);
+    setShowLogin(false);
+    setShowForgot(false);
+  };
+
+  const closeModals = () => {
+    setShowLogin(false);
+    setShowRegister(false);
+    setShowForgot(false);
+  };
  useEffect(() => {
   const storedUser = localStorage.getItem("user");
   if (storedUser) {
@@ -50,57 +72,6 @@ export default function Listings() {
   }
 }, []);
 
-
-  const toggleLogin = () => {
-    setShowForgot(false);
-    setShowRegister(false);
-    setShowLogin(true);
-  };
-
-  const toggleForgot = () => {
-    setShowLogin(false);
-    setShowRegister(false);
-    setShowForgot(true);
-  };
-
-  const toggleRegister = () => {
-    setShowRegister(true);
-    setShowLogin(false);
-    setShowForgot(false);
-  };
-
-  const closeModals = () => {
-    setShowLogin(false);
-    setShowRegister(false);
-    setShowForgot(false);
-  };
-
-  // const handleAddToCart = (product) => {
-  //   if (!isLoggedIn || !currentUser) {
-  //     toggleLogin();
-  //     return;
-  //   }
-
-  //   const userCart = cartItems || [];
-  //   const existingItemIndex = userCart.findIndex((item) => item.id === product.id);
-
-  //   let updatedUserCart;
-  //   if (existingItemIndex !== -1) {
-  //     updatedUserCart = userCart.map((item) =>
-  //       item.id === product.id
-  //         ? { ...item, quantity: item.quantity + 1 }
-  //         : item
-  //     );
-  //   } else {
-  //     updatedUserCart = [...userCart, { ...product, quantity: 1 }];
-  //   }
-
-  //   setCartItems(updatedUserCart);
-  //   localStorage.setItem(`cart_${currentUser}`, JSON.stringify(updatedUserCart));
-  //   toast.success(`${product.name} has been added to your cart`);
-  // };
-
-  // Top 5 picks for slider
    const handleAddToCart = (product) => {
   const cartKey = isLoggedIn && currentUser ? `cart_${currentUser}` : "cart_guest";
   const existingCart = JSON.parse(localStorage.getItem(cartKey)) || [];

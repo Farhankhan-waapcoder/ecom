@@ -1,30 +1,12 @@
 import { useState, useEffect } from "react";
 import { Minus, Plus, Trash2, ShoppingBag, ArrowLeft } from "lucide-react";
 import { toast } from "react-hot-toast";
-
+import { useNavigate } from 'react-router-dom';
 export default function Cart() {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
-
-  // Get user on mount
-  // useEffect(() => {
-  //   const storedUser = localStorage.getItem("user");
-  //   if (storedUser) {
-  //     const parsedUser = JSON.parse(storedUser);
-  //     setUser(parsedUser);
-  //     const savedCart = localStorage.getItem(`cart_${parsedUser.email}`);
-  //     if (savedCart) {
-  //       try {
-  //         setCartItems(JSON.parse(savedCart));
-  //       } catch (error) {
-  //         console.error("Failed to parse cart:", error);
-  //         setCartItems([]);
-  //       }
-  //     }
-  //   }
-  //   setLoading(false);
-  // }, []);
+  const navigate = useNavigate();
   useEffect(() => {
   const storedUser = localStorage.getItem("user");
   if (storedUser) {
@@ -163,7 +145,9 @@ useEffect(() => {
                 >
                   <div className="flex items-center space-x-4">
                     {/* Image */}
-                    <div className="w-20 h-20 rounded-lg overflow-hidden bg-gray-100">
+                    <div className="w-20 h-20 rounded-lg overflow-hidden bg-gray-100"
+                    onClick={() => navigate(`/product/${item.id}`)}
+                    >
                       {item.image ? (
                         <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                       ) : (

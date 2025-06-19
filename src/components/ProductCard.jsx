@@ -1,8 +1,14 @@
+import { useNavigate } from "react-router-dom";
 import { Star, ShoppingCart } from 'lucide-react';
 
 export default function ProductCard({ product, onAddToCart }) {
+  const navigate = useNavigate();
+
   return (
-    <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group hover:scale-105">
+    <div
+      onClick={() => navigate(`/product/${product.id}`)}
+      className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group hover:scale-105 cursor-pointer"
+    >
       <div className="relative">
         <img
           src={product.image}
@@ -14,16 +20,19 @@ export default function ProductCard({ product, onAddToCart }) {
           <span className="text-sm font-semibold">{product.rating}</span>
         </div>
       </div>
-      
+
       <div className="p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
           {product.name}
         </h3>
-        
+
         <div className="flex items-center justify-between">
           <span className="text-2xl font-bold text-purple-600">{product.price}</span>
           <button
-            onClick={() => onAddToCart(product)}
+            onClick={(e) => {
+              e.stopPropagation(); // stop click bubbling
+              onAddToCart(product);
+            }}
             className="bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-full transition-all duration-300 hover:scale-110 shadow-lg hover:shadow-xl"
           >
             <ShoppingCart className="w-5 h-5" />
