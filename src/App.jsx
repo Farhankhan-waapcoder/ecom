@@ -16,6 +16,7 @@ import ShippingDelivery from "./pages/ShippingDelivery.jsx";
 import Privacy from "./pages/Privacy.jsx";
 import ScrollToTop from "./components/ScrollTOTop.jsx";
 import Search from "./pages/Search.jsx";
+import CheckoutPage from "./pages/CheckOutPage.jsx";
 import './styles.css';
 
 export default function App() {
@@ -57,6 +58,7 @@ export default function App() {
         <Route path="/my-cart" element={<Cart />} />
         <Route path="/not-found" element={<PageNotFound />} />
         <Route path="/wishlist" element={<WishList />} />
+        <Route path="/checkout/:id" element={<CheckoutPage />} />
         <Route path="/contact" element={<Contact />} />
           <Route path="/about" element={<About />} />
           <Route path="/cancellation-refund" element={<CancellationRefund />} />

@@ -396,7 +396,9 @@ const ProductDetails = () => {
     localStorage.setItem(wishlistKey, JSON.stringify(updatedWishlist));
     setWishlistItems(updatedWishlist);
   };
-
+  const handleBuy=()=>{
+    navigate(`/checkout/${id}`);
+  }
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
       <div className="container mx-auto px-4 py-8">
@@ -487,7 +489,9 @@ const ProductDetails = () => {
                 <ShoppingCart className="w-5 h-5" />
                 Add to Cart
               </button>
-              <button className="h-12 px-4 border border-gray-400 text-gray-700 rounded-lg hover:bg-gray-100 transition">
+              <button className="h-12 px-4 border border-gray-400 text-gray-700 rounded-lg hover:bg-gray-100 transition"
+              onClick={()=>handleBuy()}
+              >
                 Buy Now
               </button>
             </div>
