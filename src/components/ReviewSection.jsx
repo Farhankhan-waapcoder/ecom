@@ -3,16 +3,39 @@
 import { useParams } from "react-router-dom"
 import { ArrowLeft } from "lucide-react"
 import allProducts from "../data/products.js"
-
+import toast from 'react-hot-toast';
 export default function ReviewSection({ onSubmit, onBack, formData }) {
   const { id } = useParams()
   const productId = parseInt(id)
   const product = allProducts.find((item) => item.id === productId)
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    onSubmit({})
-  }
+const handleSubmit = (e) => {
+  e.preventDefault();
+
+  // Prepare order object
+  const newOrder = {
+    id: Date.now(), // unique id for order
+    productId: product.id,
+    productName: product.name,
+    productImage: product.image,
+    productPrice: product.price,
+    orderDate: new Date().toISOString(),
+    customerInfo: formData,
+  };
+
+  // Get existing orders or create new array
+  const existingOrders = JSON.parse(localStorage.getItem("orders")) || [];
+
+  // Add new order to list
+  const updatedOrders = [...existingOrders, newOrder];
+
+  // Save to localStorage
+  localStorage.setItem("orders", JSON.stringify(updatedOrders));
+  toast.success("order placed");
+  // Redirect or show confirmation
+  onSubmit(newOrder);
+};
+
 
   if (!product) {
     return (
@@ -83,7 +106,7 @@ export default function ReviewSection({ onSubmit, onBack, formData }) {
               type="submit"
               className="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 transition-colors font-medium"
             >
-              Proceed to Payment
+              Order
             </button>
           </div>
         </form>

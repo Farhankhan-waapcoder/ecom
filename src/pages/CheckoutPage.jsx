@@ -94,7 +94,7 @@ export default function CheckoutPage() {
       </div>
 
       {/* Payment Modal */}
-      {showPaymentModal && <PaymentModal onClose={() => setShowPaymentModal(false)} />}
+      {/*{showPaymentModal && <PaymentModal onClose={() => setShowPaymentModal(false)} />}*/}
 
       {/* WhatsApp Float Button */}
       <div className="fixed bottom-6 right-6">

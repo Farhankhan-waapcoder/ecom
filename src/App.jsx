@@ -17,6 +17,8 @@ import Privacy from "./pages/Privacy.jsx";
 import ScrollToTop from "./components/ScrollTOTop.jsx";
 import Search from "./pages/Search.jsx";
 import CheckoutPage from "./pages/CheckOutPage.jsx";
+import OrderDetails from "./pages/OrderDetails.jsx";
+import OrderHistory from "./pages/OrderHistory.jsx";
 import './styles.css';
 
 export default function App() {
@@ -66,6 +68,9 @@ export default function App() {
           <Route path="/shipping-delivery" element={<ShippingDelivery />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/search/:query" element={<Search />} />
+          <Route path="/order-history" element={<OrderHistory />} />
+          <Route path="/order/:id" element={<OrderDetails />} />
+
         <Route
           path="/product/:id"
           element={
