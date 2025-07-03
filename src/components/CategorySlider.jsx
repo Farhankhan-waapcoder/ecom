@@ -1,9 +1,27 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function CategorySlider({ categories, title }) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const itemsPerView = 4;
+  const [itemsPerView, setItemsPerView] = useState(4);
+  const touchStartX = useRef(null);
+  const touchEndX = useRef(null);
+
+  // 🧠 Dynamically set itemsPerView based on screen width
+  useEffect(() => {
+    const updateItemsPerView = () => {
+      const width = window.innerWidth;
+      if (width < 640) setItemsPerView(1); // mobile
+      else if (width < 768) setItemsPerView(2); // sm
+      else if (width < 1024) setItemsPerView(3); // md
+      else setItemsPerView(4); // lg+
+    };
+
+    updateItemsPerView();
+    window.addEventListener('resize', updateItemsPerView);
+    return () => window.removeEventListener('resize', updateItemsPerView);
+  }, []);
+
   const maxIndex = Math.max(0, categories.length - itemsPerView);
 
   const goToPrevious = () => {
@@ -12,6 +30,25 @@ export default function CategorySlider({ categories, title }) {
 
   const goToNext = () => {
     setCurrentIndex((prev) => Math.min(maxIndex, prev + 1));
+  };
+
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStartX.current || !touchEndX.current) return;
+
+    const distance = touchStartX.current - touchEndX.current;
+    if (distance > 50) goToNext();       // swipe left
+    else if (distance < -50) goToPrevious(); // swipe right
+
+    touchStartX.current = null;
+    touchEndX.current = null;
   };
 
   return (
@@ -37,14 +74,17 @@ export default function CategorySlider({ categories, title }) {
       </div>
 
       <div className="overflow-hidden">
-        <div 
+        <div
           className="flex transition-transform duration-500 ease-in-out gap-6"
           style={{ transform: `translateX(-${currentIndex * (100 / itemsPerView)}%)` }}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
         >
           {categories.map((category) => (
             <div
               key={category.id}
-              className="flex-shrink-0 w-1/4 min-w-[200px] cursor-pointer group"
+              className="flex-shrink-0 w-full sm:w-1/2 md:w-1/3 lg:w-1/4 min-w-[200px] cursor-pointer group"
             >
               <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group-hover:scale-105">
                 <div className="relative">
@@ -67,3 +107,4 @@ export default function CategorySlider({ categories, title }) {
     </div>
   );
 }
+// This component renders a responsive category slider with touch support and navigation buttons.

@@ -1,11 +1,14 @@
 import { useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Star, ShoppingCart } from 'lucide-react';
 
 export default function ProductSlider({ products, title, onAddToCart }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlay, setIsAutoPlay] = useState(true);
   const navigate = useNavigate();
+
+  const touchStartX = useRef(null);
+  const touchEndX = useRef(null);
 
   useEffect(() => {
     if (!isAutoPlay) return;
@@ -32,6 +35,33 @@ export default function ProductSlider({ products, title, onAddToCart }) {
     setIsAutoPlay(false);
   };
 
+  // 🟡 Swipe handling
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStartX.current || !touchEndX.current) return;
+
+    const distance = touchStartX.current - touchEndX.current;
+
+    if (distance > 50) {
+      // Swipe left
+      goToNext();
+    } else if (distance < -50) {
+      // Swipe right
+      goToPrevious();
+    }
+
+    // Reset refs
+    touchStartX.current = null;
+    touchEndX.current = null;
+  };
+
   return (
     <div className="relative mb-12">
       <div className="flex items-center justify-between mb-6">
@@ -46,8 +76,17 @@ export default function ProductSlider({ products, title, onAddToCart }) {
         </div>
       </div>
 
-      <div className="relative overflow-hidden rounded-2xl">
-        <div className="flex transition-transform duration-500 ease-in-out" style={{ transform: `translateX(-${currentIndex * 100}%)` }}>
+      {/* Wrap slider in touch listeners */}
+      <div
+        className="relative overflow-hidden rounded-2xl"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        <div
+          className="flex transition-transform duration-500 ease-in-out"
+          style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+        >
           {products.map((product) => (
             <div
               key={product.id}
@@ -63,11 +102,7 @@ export default function ProductSlider({ products, title, onAddToCart }) {
                         {[...Array(5)].map((_, i) => (
                           <Star
                             key={i}
-                            className={`w-5 h-5 ${
-                              i < Math.floor(product.rating)
-                                ? 'text-yellow-400 fill-current'
-                                : 'text-gray-300'
-                            }`}
+                            className={`w-5 h-5 ${i < Math.floor(product.rating) ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
                           />
                         ))}
                       </div>
@@ -76,7 +111,7 @@ export default function ProductSlider({ products, title, onAddToCart }) {
                     <p className="text-3xl font-bold mb-6">{product.price}</p>
                     <button
                       onClick={(e) => {
-                        e.stopPropagation(); // prevent navigating to detail page
+                        e.stopPropagation();
                         onAddToCart(product);
                       }}
                       className="inline-flex items-center gap-2 bg-white text-purple-600 px-6 py-3 rounded-full font-semibold hover:bg-gray-100 transition-all duration-300 hover:scale-105"
@@ -93,22 +128,26 @@ export default function ProductSlider({ products, title, onAddToCart }) {
                     />
                   </div>
                 </div>
+
+                {/* Dots inside the slide */}
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
+                  {products.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        goToSlide(index);
+                      }}
+                      className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                        index === currentIndex ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white'
+                      }`}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           ))}
         </div>
-      </div>
-
-      <div className="flex justify-center mt-6 gap-2">
-        {products.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => goToSlide(index)}
-            className={`w-3 h-3 rounded-full transition-all duration-300 ${
-              index === currentIndex ? 'bg-purple-500 scale-125' : 'bg-gray-300 hover:bg-gray-400'
-            }`}
-          />
-        ))}
       </div>
     </div>
   );

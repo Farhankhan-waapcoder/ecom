@@ -20,7 +20,7 @@ const handleLogin = (e) => {
 return (
   <div className="z-50 fixed inset-0 flex items-center justify-center">
     {/* Blurred Background */}
-    <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose}></div>
+    <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" ></div>
 
     {/* Modal Content */}
     <div className="relative bg-white rounded-lg p-8 w-full max-w-md modal-pop border border-black hover:shadow-xl z-10">
