@@ -16,7 +16,7 @@ import ShippingDelivery from "./pages/ShippingDelivery.jsx";
 import Privacy from "./pages/Privacy.jsx";
 import ScrollToTop from "./components/ScrollTOTop.jsx";
 import Search from "./pages/Search.jsx";
-import CheckoutPage from "./pages/CheckOutPage.jsx";
+import CheckoutPage from "./pages/CheckoutPage.jsx";
 import OrderDetails from "./pages/OrderDetails.jsx";
 import OrderHistory from "./pages/OrderHistory.jsx";
 import './styles.css';
