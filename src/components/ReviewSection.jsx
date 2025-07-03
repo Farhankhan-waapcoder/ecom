@@ -3,12 +3,13 @@
 import { useParams } from "react-router-dom"
 import { ArrowLeft } from "lucide-react"
 import allProducts from "../data/products.js"
+import { useNavigate } from "react-router-dom"
 import toast from 'react-hot-toast';
 export default function ReviewSection({ onSubmit, onBack, formData }) {
   const { id } = useParams()
   const productId = parseInt(id)
   const product = allProducts.find((item) => item.id === productId)
-
+  const navigate = useNavigate();
 const handleSubmit = (e) => {
   e.preventDefault();
 
@@ -32,6 +33,7 @@ const handleSubmit = (e) => {
   // Save to localStorage
   localStorage.setItem("orders", JSON.stringify(updatedOrders));
   toast.success("order placed");
+  navigate("/order-history"); 
   // Redirect or show confirmation
   onSubmit(newOrder);
 };

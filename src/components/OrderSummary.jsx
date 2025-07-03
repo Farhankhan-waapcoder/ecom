@@ -1,11 +1,11 @@
-import { useParams } from "react-router-dom"
+import { useParams,useNavigate } from "react-router-dom"
 import { useState } from "react"
 import allProducts from "../data/products.js";
 export default function OrderSummary() {
   const { id } = useParams()
   const productId = parseInt(id)
   const product = allProducts.find((item) => item.id === productId)
-
+  const navigate = useNavigate();
   const [couponCode, setCouponCode] = useState("")
 
   const handleApplyCoupon = () => {
