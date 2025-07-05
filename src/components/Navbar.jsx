@@ -89,13 +89,13 @@ const Navbar = ({ cartCount = 0 }) => {
   }
 
   const menuItems = [
-    { name: "Return Gifts", path: "/", icon: "🎁" },
-    { name: "Diwali Diya", path: "/", icon: "🪔" },
-    { name: "Frames", path: "/", icon: "🖼️" },
-    { name: "Combos", path: "/", icon: "📦" },
-    { name: "Cushions", path: "/", icon: "🛏️" },
-    { name: "Cutout Standy", path: "/", icon: "📸" },
-    { name: "Wallet", path: "/", icon: "👛" },
+    { name: "Your Orders", path: "/order-history" },
+    { name: "Diwali Diya", path: "/" },
+    { name: "Frames", path: "/" },
+    { name: "Combos", path: "/"},
+    { name: "Cushions", path: "/" },
+    { name: "Cutout Standy", path: "/" },
+    { name: "Wallet", path: "/" },
   ]
 
   return (
@@ -408,10 +408,11 @@ const Navbar = ({ cartCount = 0 }) => {
                   className="flex items-center space-x-4 p-4 text-gray-700 hover:text-[#007580] hover:bg-gray-50 rounded-2xl transition-all duration-300 group"
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
-                  <div className="w-10 h-10 bg-gray-100 group-hover:bg-[#007580] rounded-xl flex items-center justify-center transition-colors duration-300">
+                  {/* <div className="w-10 h-10 bg-gray-100 group-hover:bg-[#007580] rounded-xl flex items-center justify-center transition-colors duration-300">
                     <span className="text-lg group-hover:scale-110 transition-transform duration-300">{item.icon}</span>
-                  </div>
+                  </div> */}
                   <span className="font-medium">{item.name}</span>
+                  
                   <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <ChevronDown className="w-4 h-4 -rotate-90" />
                   </div>
