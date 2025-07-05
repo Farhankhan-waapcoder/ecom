@@ -392,7 +392,8 @@ export default function Cart() {
                     </div>
 
                     {/* Details */}
-                    <div className="flex-1">
+                    <div className="flex-1 cursor-pointer" onClick={() => navigate(`/product/${item.id}`)}>
+
                       <h3 className="font-semibold">{item.name}</h3>
                       <p className="text-gray-600">{item.price} each</p>
                       {item.rating && (
@@ -433,8 +434,8 @@ export default function Cart() {
 
                   {/* Mobile Layout */}
                   <div className="sm:hidden">
-                    <div className="flex justify-between items-start mb-3">
-                      <div className="flex-1">
+                    <div className="flex justify-between items-start mb-3" >
+                      <div className="flex-1" onClick={() => navigate(`/product/${item.id}`)}>
                         <h3 className="font-semibold text-lg">{item.name}</h3>
                         <p className="text-gray-600 text-sm">{item.price} each</p>
                         {item.rating && (
