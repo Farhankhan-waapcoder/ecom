@@ -14,12 +14,7 @@
         "Bluetooth 5.2",
         "Soft Cushioned Earcups"
       ],
-      images: [
-      "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=60",
-      "https://images.unsplash.com/photo-1484704849700-f032a568e944?w=600&auto=format&fit=crop&q=60",
-      "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=600&auto=format&fit=crop&q=60",
-      "https://images.unsplash.com/photo-1558756520-22cfe5d382ca?w=600&auto=format&fit=crop&q=60"
-    ]
+      image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=60",
     },
     {
       id: 102,
@@ -38,23 +33,23 @@
       ],
       image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&auto=format&fit=crop&q=60"
     },
-    {
-      id: 103,
-      name: "Laptop Stand Pro",
-      price: "$89",
-      rating: 4.9,
-      stock: 58,
-      brand: "ErgoTech",
-      category: "Home & Garden",
-      description: "Ergonomic aluminum laptop stand for comfortable working angles and improved posture.",
-      features: [
-        "Adjustable Height",
-        "Aluminum Body",
-        "Anti-Slip Pads",
-        "Supports up to 17'' Laptops"
-      ],
-      image: "https://images.unsplash.com/photo-1527864550417-7fd91fc51ca8?w=600&auto=format&fit=crop&q=60"
-    },
+    // {
+    //   id: 103,
+    //   name: "Laptop Stand Pro",
+    //   price: "$89",
+    //   rating: 4.9,
+    //   stock: 58,
+    //   brand: "ErgoTech",
+    //   category: "Home & Garden",
+    //   description: "Ergonomic aluminum laptop stand for comfortable working angles and improved posture.",
+    //   features: [
+    //     "Adjustable Height",
+    //     "Aluminum Body",
+    //     "Anti-Slip Pads",
+    //     "Supports up to 17'' Laptops"
+    //   ],
+    //   image: "https://images.unsplash.com/photo-1527864550417-7fd91fc51ca8?w=600&auto=format&fit=crop&q=60"
+    // },
     {
       id: 104,
       name: "Wireless Charging Pad",

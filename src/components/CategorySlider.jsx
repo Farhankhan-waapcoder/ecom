@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function CategorySlider({ categories, title }) {
+  const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [itemsPerView, setItemsPerView] = useState(4);
   const touchStartX = useRef(null);
@@ -53,9 +55,9 @@ export default function CategorySlider({ categories, title }) {
 
   return (
     <div className="mb-12">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6" >
         <h2 className="text-3xl font-bold text-gray-900">{title}</h2>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2" >
           <button
             onClick={goToPrevious}
             disabled={currentIndex === 0}
@@ -84,7 +86,7 @@ export default function CategorySlider({ categories, title }) {
           {categories.map((category) => (
             <div
               key={category.id}
-              className="flex-shrink-0 w-full sm:w-1/2 md:w-1/3 lg:w-1/4 min-w-[200px] cursor-pointer group"
+              className="flex-shrink-0 w-full sm:w-1/2 md:w-1/3 lg:w-1/4 min-w-[200px] cursor-pointer group" onClick={() => navigate(`/categories/${category.name}`)}
             >
               <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group-hover:scale-105">
                 <div className="relative">

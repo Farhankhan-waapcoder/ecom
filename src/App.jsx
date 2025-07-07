@@ -19,6 +19,8 @@ import Search from "./pages/Search.jsx";
 import CheckoutPage from "./pages/CheckoutPage.jsx";
 import OrderDetails from "./pages/OrderDetails.jsx";
 import OrderHistory from "./pages/OrderHistory.jsx";
+import Breadcrumbs from "./components/Breadcrumbs.jsx";
+import Category from "./pages/Category.jsx";
 import './styles.css';
 
 export default function App() {
@@ -45,6 +47,7 @@ export default function App() {
        <ScrollToTop />
       <Toaster position="top-right" />
       <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
+      <Breadcrumbs />
       <Routes>
 
         <Route
@@ -70,7 +73,7 @@ export default function App() {
           <Route path="/search/:query" element={<Search />} />
           <Route path="/order-history" element={<OrderHistory />} />
           <Route path="/order/:id" element={<OrderDetails />} />
-
+        <Route path="/categories/:name" element={<Category />} />
         <Route
           path="/product/:id"
           element={

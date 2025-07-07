@@ -1,97 +1,112 @@
-import { useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { Grid, List, Filter, X } from "lucide-react";
-
-import allProducts from "../data/products";
-import ProductCard from "../components/ProductCard";
-import HorizontalProductCard from "../components/HorizontalProductCard";
-import FilterSidebar from "../components/FilterSidebar";
-
-export default function Search() {
-  const { query } = useParams();
-  const [products, setProducts] = useState([]);
-  const [filteredProducts, setFilteredProducts] = useState([]);
+import { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import { Filter, X, Star, ShoppingCart, Grid, List } from 'lucide-react';
+import ProductCard from '../components/ProductCard';
+import FilterSidebar from '../components/FilterSidebar';
+import allProducts from '../data/products.js'; 
+import HorizontalProductCard from '../components/HorizontalProductCard.jsx';
+export default function Category() {
+  const { name } = useParams();
+  const [products, setProducts] = useState(allProducts);
+  const [filteredProducts, setFilteredProducts] = useState(allProducts);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [viewMode, setViewMode] = useState("grid");
-  const [sortBy, setSortBy] = useState("featured");
-
+  const [viewMode, setViewMode] = useState('grid');
+  const [sortBy, setSortBy] = useState('featured');
   const [filters, setFilters] = useState({
     brands: [],
     priceRange: [0, 2000],
     rating: 0,
-    inStock: false,
+    inStock: false
   });
 
-  const uniqueBrands = [
-    ...new Set(allProducts.map((product) => product.brand)),
-  ];
+  // Get unique brands and categories
+  const uniqueBrands = [...new Set(allProducts.map(p => p.brand))];
+  const uniqueCategories = [...new Set(allProducts.map(p => p.category))];
 
-  useEffect(() => {
-    const matched = allProducts.filter((product) =>
-      product.name.toLowerCase().includes(query.toLowerCase())
-    );
-    setProducts(matched);
-  }, [query]);
-
+  // Filter products based on current filters
   useEffect(() => {
     let filtered = [...products];
 
-    // Brand filter
+    // Filter by brands
     if (filters.brands.length > 0) {
-      filtered = filtered.filter((p) => filters.brands.includes(p.brand));
+      filtered = filtered.filter(p => filters.brands.includes(p.brand));
     }
 
-    // Price filter
-    filtered = filtered.filter((p) => {
-      const price = parseFloat(p.price.replace("$", ""));
-      return (
-        price >= filters.priceRange[0] && price <= filters.priceRange[1]
-      );
+    // Filter by price range
+    filtered = filtered.filter(p => {
+      const price = parseFloat(p.price.replace('$', ''));
+      return price >= filters.priceRange[0] && price <= filters.priceRange[1];
     });
 
-    // Rating filter
+    // Filter by rating
     if (filters.rating > 0) {
-      filtered = filtered.filter((p) => p.rating >= filters.rating);
+      filtered = filtered.filter(p => p.rating >= filters.rating);
     }
 
-    // Stock filter
+    // Filter by stock
     if (filters.inStock) {
-      filtered = filtered.filter((p) => p.stock > 0);
+      filtered = filtered.filter(p => p.stock > 0);
     }
 
-    // Sorting
+    // Sort products
     switch (sortBy) {
-      case "price-low":
-        filtered.sort(
-          (a, b) =>
-            parseFloat(a.price.replace("$", "")) -
-            parseFloat(b.price.replace("$", ""))
-        );
+      case 'price-low':
+        filtered.sort((a, b) => parseFloat(a.price.replace('$', '')) - parseFloat(b.price.replace('$', '')));
         break;
-      case "price-high":
-        filtered.sort(
-          (a, b) =>
-            parseFloat(b.price.replace("$", "")) -
-            parseFloat(a.price.replace("$", ""))
-        );
+      case 'price-high':
+        filtered.sort((a, b) => parseFloat(b.price.replace('$', '')) - parseFloat(a.price.replace('$', '')));
         break;
-      case "rating":
+      case 'rating':
         filtered.sort((a, b) => b.rating - a.rating);
         break;
-      case "name":
+      case 'name':
         filtered.sort((a, b) => a.name.localeCompare(b.name));
         break;
       default:
+        // Keep original order for 'featured'
         break;
     }
 
     setFilteredProducts(filtered);
   }, [filters, sortBy, products]);
 
-  const handleAddToCart = (product) => {
-    console.log("Add to cart:", product);
+  const handleBrandChange = (brand) => {
+    setFilters(prev => ({
+      ...prev,
+      brands: prev.brands.includes(brand)
+        ? prev.brands.filter(b => b !== brand)
+        : [...prev.brands, brand]
+    }));
   };
 
+  const handlePriceChange = (e) => {
+    const value = parseInt(e.target.value);
+    setFilters(prev => ({
+      ...prev,
+      priceRange: [prev.priceRange[0], value]
+    }));
+  };
+
+  const handleRatingChange = (rating) => {
+    setFilters(prev => ({
+      ...prev,
+      rating: prev.rating === rating ? 0 : rating
+    }));
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      brands: [],
+      priceRange: [0, 2000],
+      rating: 0,
+      inStock: false
+    });
+  };
+
+  const handleAddToCart = (product) => {
+    // Add to cart logic here
+    console.log('Added to cart:', product);
+  };
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -100,32 +115,28 @@ export default function Search() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-900 capitalize">
-                Search Results for "{query}"
+                {name?.replace('-', ' ')} Products
               </h1>
               <p className="text-gray-600 mt-1">
                 {filteredProducts.length} products found
               </p>
             </div>
-
+            
             <div className="flex items-center gap-4">
-              {/* View Toggle */}
+              {/* View Mode Toggle */}
               <div className="hidden sm:flex items-center bg-gray-100 rounded-lg p-1">
                 <button
-                  onClick={() => setViewMode("grid")}
+                  onClick={() => setViewMode('grid')}
                   className={`p-2 rounded-md transition-colors ${
-                    viewMode === "grid"
-                      ? "bg-white shadow-sm"
-                      : "hover:bg-gray-200"
+                    viewMode === 'grid' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'
                   }`}
                 >
                   <Grid className="w-4 h-4" />
                 </button>
                 <button
-                  onClick={() => setViewMode("list")}
+                  onClick={() => setViewMode('list')}
                   className={`p-2 rounded-md transition-colors ${
-                    viewMode === "list"
-                      ? "bg-white shadow-sm"
-                      : "hover:bg-gray-200"
+                    viewMode === 'list' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'
                   }`}
                 >
                   <List className="w-4 h-4" />
@@ -147,7 +158,7 @@ export default function Search() {
 
               {/* Mobile Filter Button */}
               <button
-                onClick={() => setIsFilterOpen(true)}
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
                 className="lg:hidden bg-purple-600 text-white p-2 rounded-lg hover:bg-purple-700 transition-colors"
               >
                 <Filter className="w-5 h-5" />
@@ -157,19 +168,18 @@ export default function Search() {
         </div>
       </div>
 
-      {/* Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex gap-8">
-          {/* Sidebar */}
+          {/* Desktop Sidebar */}
           <div className="hidden lg:block w-80 flex-shrink-0">
             <FilterSidebar
-              filters={filters}
-              setFilters={setFilters}
-              uniqueBrands={uniqueBrands}
-            />
+  filters={filters}
+  setFilters={setFilters}
+  uniqueBrands={uniqueBrands}
+/>
           </div>
 
-          {/* Mobile Filter */}
+          {/* Mobile Filter Overlay */}
           {isFilterOpen && (
             <div className="lg:hidden fixed inset-0 z-50 bg-black bg-opacity-50">
               <div className="absolute right-0 top-0 h-full w-80 bg-white overflow-y-auto">
@@ -184,45 +194,33 @@ export default function Search() {
                     </button>
                   </div>
                   <FilterSidebar
-                    filters={filters}
-                    setFilters={setFilters}
-                    uniqueBrands={uniqueBrands}
-                  />
+  filters={filters}
+  setFilters={setFilters}
+  uniqueBrands={uniqueBrands}
+/>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Products */}
+          {/* Products Grid */}
           <div className="flex-1">
             {filteredProducts.length === 0 ? (
               <div className="text-center py-12">
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  No products found
-                </h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No products found</h3>
                 <p className="text-gray-600">Try adjusting your filters</p>
               </div>
             ) : (
-              <div
-                className={`${
-                  viewMode === "grid"
-                    ? "grid gap-6 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3"
-                    : "space-y-4"
-                }`}
-              >
-                {filteredProducts.map((product) =>
-                  viewMode === "grid" ? (
-                    <ProductCard
-                      key={product.id}
-                      product={product}
-                      onAddToCart={handleAddToCart}
-                    />
+              <div className={`grid gap-6 ${
+                viewMode === 'grid' 
+                  ? 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3' 
+                  : 'grid-cols-1'
+              }`}>
+                 {filteredProducts.map(product =>
+                  viewMode === 'grid' ? (
+                    <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} />
                   ) : (
-                    <HorizontalProductCard
-                      key={product.id}
-                      product={product}
-                      onAddToCart={handleAddToCart}
-                    />
+                    <HorizontalProductCard key={product.id} product={product} onAddToCart={handleAddToCart} />
                   )
                 )}
               </div>
