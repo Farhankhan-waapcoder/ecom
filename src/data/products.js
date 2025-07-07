@@ -14,7 +14,12 @@
         "Bluetooth 5.2",
         "Soft Cushioned Earcups"
       ],
-      image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=60"
+      images: [
+      "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=60",
+      "https://images.unsplash.com/photo-1484704849700-f032a568e944?w=600&auto=format&fit=crop&q=60",
+      "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=600&auto=format&fit=crop&q=60",
+      "https://images.unsplash.com/photo-1558756520-22cfe5d382ca?w=600&auto=format&fit=crop&q=60"
+    ]
     },
     {
       id: 102,

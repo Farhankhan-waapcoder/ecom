@@ -64,25 +64,30 @@ export default function ProductSlider({ products, title, onAddToCart }) {
 
   return (
     <div className="relative mb-12">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-3xl font-bold text-gray-900">{title}</h2>
-        <div className="flex items-center gap-2">
-          <button onClick={goToPrevious} className="p-2 rounded-full bg-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-            <ChevronLeft className="w-5 h-5 text-gray-600" />
-          </button>
-          <button onClick={goToNext} className="p-2 rounded-full bg-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-            <ChevronRight className="w-5 h-5 text-gray-600" />
-          </button>
-        </div>
-      </div>
-
-      {/* Wrap slider in touch listeners */}
+      {/* Slider container with touch listeners */}
       <div
-        className="relative overflow-hidden rounded-2xl"
+        className="relative overflow-hidden rounded-2xl group"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
+        {/* Left Arrow - Inside slider */}
+        <button 
+          onClick={goToPrevious}
+          className="absolute left-4 top-1/2 transform -translate-y-1/2 z-20 p-3 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 hover:bg-white/30 transition-all duration-300 hover:scale-110 opacity-0 group-hover:opacity-100"
+        >
+          <ChevronLeft className="w-6 h-6 text-white" />
+        </button>
+
+        {/* Right Arrow - Inside slider */}
+        <button 
+          onClick={goToNext}
+          className="absolute right-4 top-1/2 transform -translate-y-1/2 z-20 p-3 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 hover:bg-white/30 transition-all duration-300 hover:scale-110 opacity-0 group-hover:opacity-100"
+        >
+          <ChevronRight className="w-6 h-6 text-white" />
+        </button>
+
+        {/* Slides */}
         <div
           className="flex transition-transform duration-500 ease-in-out"
           style={{ transform: `translateX(-${currentIndex * 100}%)` }}
