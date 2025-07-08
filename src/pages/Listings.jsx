@@ -383,7 +383,7 @@ const topPicks = [
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <main className="max-w-7xl mx-auto px-0 sm:px-1 lg:px-0 py-3">
+      <main className="mx-auto px-0 sm:px-1 lg:px-0 py-3">
         {/* Top Picks Slider */}
         <ProductSlider
           products={topPicks}
