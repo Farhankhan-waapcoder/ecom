@@ -269,13 +269,13 @@ export default function OrderHistory() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
-        <div className="max-w-6xl mx-auto px-4 py-6">
+        <div className="max-w-7xl mx-auto px-0 sm:px-1 lg:px-0 py-3">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Your Orders</h1>
           <p className="text-gray-600 mt-1">{orders.length} order{orders.length !== 1 ? 's' : ''} found</p>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-0 sm:px-1 lg:px-0 py-3">
         <div className="space-y-4">
           {orders.map((order) => {
             const status = getRandomStatus();
@@ -438,7 +438,8 @@ export default function OrderHistory() {
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-white/30 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+>
           <div className="bg-white rounded-xl max-w-md w-full p-6">
             <div className="flex items-center space-x-3 mb-4">
               <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">

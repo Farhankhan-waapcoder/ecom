@@ -47,7 +47,7 @@ export default function App() {
        <ScrollToTop />
       <Toaster position="top-right" />
       <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
-      <Breadcrumbs />
+      {/* <Breadcrumbs /> */}
       <Routes>
 
         <Route

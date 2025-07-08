@@ -96,7 +96,7 @@ export default function Search() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white shadow-sm sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="max-w-7xl mx-auto px-0 sm:px-1 lg:px-0 py-3">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-900 capitalize">
@@ -158,7 +158,7 @@ export default function Search() {
       </div>
 
       {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-0 sm:px-1 lg:px-0 py-3">
         <div className="flex gap-8">
           {/* Sidebar */}
           <div className="hidden lg:block w-80 flex-shrink-0">
