@@ -382,66 +382,70 @@ const topPicks = [
 ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <main className="max-w-7xl mx-auto px-0 sm:px-1 lg:px-0 py-3">
-        {/* Top Picks Slider */}
-        <ProductSlider
-          products={topPicks}
-          title="Our Top Picks"
-          onAddToCart={handleAddToCart}
-        />
+  <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
+    <main className="max-w-7xl mx-auto px-0 sm:px-1 lg:px-0 py-3">
+      {/* Top Picks Slider */}
+      <ProductSlider
+        products={topPicks}
+        title="Our Top Picks"
+        onAddToCart={handleAddToCart}
+      />
 
-        {/* Categories Slider */}
-        <CategorySlider
-          categories={categories}
-          title="Our Top Picked Categories"
-        />
+      {/* Categories Slider */}
+      <CategorySlider
+        categories={categories}
+        title="Our Top Picked Categories"
+      />
 
-        {/* All Products Grid */}
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">Featured Products</h2>
-          <p className="text-gray-600">Discover our hand-picked selection of premium items</p>
-        </div>
+      {/* All Products Grid */}
+      <div className="mb-8">
+        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 transition-colors duration-300">
+          Featured Products
+        </h2>
+        <p className="text-gray-600 dark:text-gray-300 transition-colors duration-300">
+          Discover our hand-picked selection of premium items
+        </p>
+      </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {allProducts.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              onAddToCart={handleAddToCart}
-            />
-          ))}
-        </div>
-      </main>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {allProducts.map((product) => (
+          <ProductCard
+            key={product.id}
+            product={product}
+            onAddToCart={handleAddToCart}
+          />
+        ))}
+      </div>
+    </main>
 
-      {/* Modal Backdrop */}
-      {(showLogin || showRegister || showForgot) && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-all duration-300" />
-      )}
+    {/* Modal Backdrop */}
+    {(showLogin || showRegister || showForgot) && (
+      <div className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm z-40 transition-all duration-300" />
+    )}
 
-      {/* Modals */}
-      {showLogin && (
-        <LoginModal
-          setIsLoggedIn={setIsLoggedIn}
-          onClose={closeModals}
-          onSwitchToRegister={toggleRegister}
-          onSwitchToForgot={toggleForgot}
-        />
-      )}
+    {/* Modals */}
+    {showLogin && (
+      <LoginModal
+        setIsLoggedIn={setIsLoggedIn}
+        onClose={closeModals}
+        onSwitchToRegister={toggleRegister}
+        onSwitchToForgot={toggleForgot}
+      />
+    )}
 
-      {showForgot && (
-        <ForgotPasswordModal
-          onClose={closeModals}
-          onSwitchToLogin={toggleLogin}
-        />
-      )}
+    {showForgot && (
+      <ForgotPasswordModal
+        onClose={closeModals}
+        onSwitchToLogin={toggleLogin}
+      />
+    )}
 
-      {showRegister && (
-        <RegisterModal
-          onClose={closeModals}
-          onSwitchToLogin={toggleLogin}
-        />
-      )}
-    </div>
-  );
+    {showRegister && (
+      <RegisterModal
+        onClose={closeModals}
+        onSwitchToLogin={toggleLogin}
+      />
+    )}
+  </div>
+);
 }

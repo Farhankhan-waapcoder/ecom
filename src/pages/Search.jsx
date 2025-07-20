@@ -92,30 +92,30 @@ export default function Search() {
     console.log("Add to cart:", product);
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50">
+return (
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
       {/* Header */}
-      <div className="bg-white shadow-sm sticky top-0 z-40">
+      <div className="bg-white dark:bg-slate-800 shadow-sm dark:shadow-slate-900/30 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-0 sm:px-1 lg:px-0 py-3">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 capitalize">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100 capitalize">
                 Search Results for "{query}"
               </h1>
-              <p className="text-gray-600 mt-1">
+              <p className="text-gray-600 dark:text-slate-400 mt-1">
                 {filteredProducts.length} products found
               </p>
             </div>
 
             <div className="flex items-center gap-4">
               {/* View Toggle */}
-              <div className="hidden sm:flex items-center bg-gray-100 rounded-lg p-1">
+              <div className="hidden sm:flex items-center bg-gray-100 dark:bg-slate-700 rounded-lg p-1">
                 <button
                   onClick={() => setViewMode("grid")}
                   className={`p-2 rounded-md transition-colors ${
                     viewMode === "grid"
-                      ? "bg-white shadow-sm"
-                      : "hover:bg-gray-200"
+                      ? "bg-white dark:bg-slate-600 shadow-sm text-gray-900 dark:text-slate-100"
+                      : "hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-700 dark:text-slate-300"
                   }`}
                 >
                   <Grid className="w-4 h-4" />
@@ -124,8 +124,8 @@ export default function Search() {
                   onClick={() => setViewMode("list")}
                   className={`p-2 rounded-md transition-colors ${
                     viewMode === "list"
-                      ? "bg-white shadow-sm"
-                      : "hover:bg-gray-200"
+                      ? "bg-white dark:bg-slate-600 shadow-sm text-gray-900 dark:text-slate-100"
+                      : "hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-700 dark:text-slate-300"
                   }`}
                 >
                   <List className="w-4 h-4" />
@@ -136,7 +136,7 @@ export default function Search() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-purple-500 focus:border-purple-500"
+                className="border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-purple-500 dark:focus:border-purple-400"
               >
                 <option value="featured">Featured</option>
                 <option value="price-low">Price: Low to High</option>
@@ -148,7 +148,7 @@ export default function Search() {
               {/* Mobile Filter Button */}
               <button
                 onClick={() => setIsFilterOpen(true)}
-                className="lg:hidden bg-purple-600 text-white p-2 rounded-lg hover:bg-purple-700 transition-colors"
+                className="lg:hidden bg-purple-600 dark:bg-purple-700 text-white p-2 rounded-lg hover:bg-purple-700 dark:hover:bg-purple-800 transition-colors"
               >
                 <Filter className="w-5 h-5" />
               </button>
@@ -171,14 +171,14 @@ export default function Search() {
 
           {/* Mobile Filter */}
           {isFilterOpen && (
-            <div className="lg:hidden fixed inset-0 z-50 bg-black bg-opacity-50">
-              <div className="absolute right-0 top-0 h-full w-80 bg-white overflow-y-auto">
+            <div className="lg:hidden fixed inset-0 z-50 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70">
+              <div className="absolute right-0 top-0 h-full w-80 bg-white dark:bg-slate-800 overflow-y-auto">
                 <div className="p-4">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold">Filters</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100">Filters</h3>
                     <button
                       onClick={() => setIsFilterOpen(false)}
-                      className="p-2 hover:bg-gray-100 rounded-lg"
+                      className="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-300 rounded-lg"
                     >
                       <X className="w-5 h-5" />
                     </button>
@@ -197,10 +197,10 @@ export default function Search() {
           <div className="flex-1">
             {filteredProducts.length === 0 ? (
               <div className="text-center py-12">
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-slate-100 mb-2">
                   No products found
                 </h3>
-                <p className="text-gray-600">Try adjusting your filters</p>
+                <p className="text-gray-600 dark:text-slate-400">Try adjusting your filters</p>
               </div>
             ) : (
               <div

@@ -21,6 +21,7 @@ import OrderDetails from "./pages/OrderDetails.jsx";
 import OrderHistory from "./pages/OrderHistory.jsx";
 import Breadcrumbs from "./components/Breadcrumbs.jsx";
 import Category from "./pages/Category.jsx";
+import { ThemeProvider } from './contexts/ThemeContext';
 import './styles.css';
 
 export default function App() {
@@ -43,6 +44,7 @@ export default function App() {
   }, []);
 
   return (
+  <ThemeProvider>
     <Router>
        <ScrollToTop />
       <Toaster position="top-right" />
@@ -86,5 +88,6 @@ export default function App() {
       </Routes>
       <Footer/>
     </Router>
+  </ThemeProvider>
   );
 }
