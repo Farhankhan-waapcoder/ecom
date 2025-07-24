@@ -1,108 +1,244 @@
 import { Link } from 'react-router-dom';
-import { Mail, Phone, MapPin } from 'lucide-react';
+import { Mail, Phone, MapPin, Star } from 'lucide-react';
 
 export default function Footer() {
   return (
-    <footer className="bg-slate-800 text-white py-12">
-      <div className="max-w-6xl mx-auto px-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Quick Links Section */}
+  <footer className="bg-white dark:bg-gray-900 transition-colors duration-300 pt-7" >
+    {/* Newsletter Section */}
+    <div className="bg-gradient-to-br from-purple-500 to-pink-100 dark:from-purple-600 dark:to-purple-800 text-black dark:text-white py-8 transition-colors duration-300">
+      <div className="max-w-7xl mx-auto px-0 sm:px-1 lg:px-0">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <div>
-            <h3 className="text-xl font-semibold mb-6">Quick Links</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-3">
-                <Link 
-                  to="/contact" 
-                  className="block text-gray-300 hover:text-white transition-colors duration-200"
-                >
-                  Contact Us
-                </Link>
-                <Link 
-                  to="/about" 
-                  className="block text-gray-300 hover:text-white transition-colors duration-200"
-                >
-                  About Us
-                </Link>
-                <Link 
-                  to="/cancellation-refund" 
-                  className="block text-gray-300 hover:text-white transition-colors duration-200"
-                >
-                  Cancellation & Refund
-                </Link>
-              </div>
-              <div className="space-y-3">
-                <Link 
-                  to="/terms-conditions" 
-                  className="block text-gray-300 hover:text-white transition-colors duration-200"
-                >
-                  Terms & Conditions
-                </Link>
-                <Link 
-                  to="/shipping-delivery" 
-                  className="block text-gray-300 hover:text-white transition-colors duration-200"
-                >
-                  Shipping & Delivery
-                </Link>
-                <Link 
-                  to="/privacy" 
-                  className="block text-gray-300 hover:text-white transition-colors duration-200"
-                >
-                  Privacy
-                </Link>
-              </div>
-            </div>
+            <h3 className="text-xl font-bold mb-2">Sign up to our news & offers</h3>
+            <p className="text-purple-100 dark:text-purple-200">
+              Be the first to know about exclusive offers, new services, couriers, tools and more!
+            </p>
           </div>
-
-          {/* Connect with us Section */}
-          <div>
-            <h3 className="text-xl font-semibold mb-6">Connect with us</h3>
-            <div className="space-y-4">
-              {/* Social Media Icons */}
-              <div className="flex space-x-4 mb-6">
-                <a 
-                  href="#" 
-                  className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-gray-600 transition-colors duration-200"
-                >
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                  </svg>
-                </a>
-                <a 
-                  href="#" 
-                  className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-gray-600 transition-colors duration-200"
-                >
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/>
-                  </svg>
-                </a>
-              </div>
-
-              {/* Contact Information */}
-              <div className="space-y-3">
-                <div className="flex items-center space-x-3">
-                  <Mail className="w-5 h-5 text-gray-400" />
-                  <span className="text-gray-300">sushmanugiitgallery@gmail.com</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <Phone className="w-5 h-5 text-gray-400" />
-                  <span className="text-gray-300">7801074907</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <MapPin className="w-5 h-5 text-gray-400" />
-                  <span className="text-gray-300">sushmanugiitgallery</span>
-                </div>
-              </div>
+          <div className="flex w-full md:w-auto max-w-md">
+            <div className="relative flex-1">
+              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-300" />
+              <input
+                type="email"
+                placeholder="email@address.com"
+                className="w-full pl-12 pr-4 py-3 rounded-l-lg border-0 focus:outline-none focus:ring-2 focus:ring-purple-300 dark:focus:ring-purple-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-300"
+              />
             </div>
+            <button className="bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700 text-white px-6 py-3 rounded-r-lg font-semibold transition-colors duration-200">
+              ✓ Sign up
+            </button>
           </div>
-        </div>
-
-        {/* Copyright */}
-        <div className="mt-8 pt-8 border-t border-gray-700 text-center">
-          <p className="text-gray-400">
-            © sushmanugiitgallery.com 2025. All rights reserved
-          </p>
         </div>
       </div>
-    </footer>
-  );
+    </div>
+
+    {/* Main Footer Content */}
+    <div className="py-12">
+      <div className="max-w-7xl mx-auto px-0 sm:px-1 lg:px-0">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {/* Logo and Trust Section */}
+          <div className="lg:col-span-1">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4 transition-colors duration-300">sushmanugiitgallery</h2>
+              
+              {/* Trustpilot-style rating */}
+              <div className="bg-green-500 dark:bg-green-600 text-white p-3 rounded-lg mb-4 transition-colors duration-300">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-bold">Trustpilot</span>
+                </div>
+                <div className="flex items-center gap-1 mb-1">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-current" />
+                  ))}
+                </div>
+                <p className="text-sm">Trustscore 4.9 | 9,200 reviews</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Company Section */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 transition-colors duration-300">Company</h3>
+            <div className="space-y-2">
+              <Link to="/about" className="block text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-300">
+                About us
+              </Link>
+              <Link to="/reviews" className="block text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-300">
+                Reviews
+              </Link>
+              <Link to="/privacy" className="block text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-300">
+                Privacy policy
+              </Link>
+              <Link to="/cookies" className="block text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-300">
+                Cookie policy
+              </Link>
+              <Link to="/terms-conditions" className="block text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-300">
+                Terms & conditions
+              </Link>
+              <Link to="/acceptable-use" className="block text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-300">
+                Acceptable use policy
+              </Link>
+              <Link to="/sitemap" className="block text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-300">
+                Sitemap
+              </Link>
+            </div>
+          </div>
+
+          {/* Shipping Services Section */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 transition-colors duration-300">Shipping services</h3>
+            <div className="space-y-2">
+              <Link to="/ship-package" className="block text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-300">
+                Ship a package
+              </Link>
+              <Link to="/track-package" className="block text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-300">
+                Track a package
+              </Link>
+              <Link to="/shipping-delivery" className="block text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-300">
+                Domestic shipping
+              </Link>
+              <Link to="/international-shipping" className="block text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-300">
+                International shipping
+              </Link>
+              <Link to="/bulk-shipping" className="block text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-300">
+                Bulk shipping
+              </Link>
+              <Link to="/couriers" className="block text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-300">
+                Couriers
+              </Link>
+              <Link to="/delivery-services" className="block text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-300">
+                Delivery services
+              </Link>
+            </div>
+          </div>
+
+          {/* Customers Section */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 transition-colors duration-300">Customers</h3>
+            <div className="space-y-2">
+              <Link to="/login" className="block text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-300">
+                Log in
+              </Link>
+              <Link to="/register" className="block text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-300">
+                Register
+              </Link>
+              <Link to="/contact" className="block text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-300">
+                Contact us
+              </Link>
+              <Link to="/support" className="block text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-300">
+                Support hub
+              </Link>
+              <Link to="/preferences" className="block text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-300">
+                Preferences
+              </Link>
+            </div>
+            
+            {/* Contact Information */}
+            <div className="mt-6 space-y-3">
+              <div className="flex items-center space-x-3">
+                <Mail className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                <span className="text-sm text-gray-600 dark:text-gray-300 transition-colors duration-300">sushmanugiitgallery@gmail.com</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <Phone className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                <span className="text-sm text-gray-600 dark:text-gray-300 transition-colors duration-300">7801074907</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <MapPin className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                <span className="text-sm text-gray-600 dark:text-gray-300 transition-colors duration-300">sushmanugiitgallery</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Trust Indicators */}
+        <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700 transition-colors duration-300">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-center">
+            <div className="flex flex-col items-center">
+              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-800 rounded-full flex items-center justify-center mb-3 transition-colors duration-300">
+                <svg className="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M9 21l3-3 3 3" />
+                </svg>
+              </div>
+              <h4 className="font-semibold text-gray-800 dark:text-white text-sm transition-colors duration-300">SHIPPING TO</h4>
+              <p className="text-gray-600 dark:text-gray-300 text-sm transition-colors duration-300">OVER 200 COUNTRIES</p>
+            </div>
+            
+            <div className="flex flex-col items-center">
+              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-800 rounded-full flex items-center justify-center mb-3 transition-colors duration-300">
+                <svg className="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              </div>
+              <h4 className="font-semibold text-gray-800 dark:text-white text-sm transition-colors duration-300">100% SECURE</h4>
+              <p className="text-gray-600 dark:text-gray-300 text-sm transition-colors duration-300">CHECKOUT</p>
+            </div>
+            
+            <div className="flex flex-col items-center">
+              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-800 rounded-full flex items-center justify-center mb-3 transition-colors duration-300">
+                <svg className="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              </div>
+              <h4 className="font-semibold text-gray-800 dark:text-white text-sm transition-colors duration-300">OUTSTANDING</h4>
+              <p className="text-gray-600 dark:text-gray-300 text-sm transition-colors duration-300">WORLDWIDE SUPPORT</p>
+            </div>
+            
+            <div className="flex flex-col items-center">
+              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-800 rounded-full flex items-center justify-center mb-3 transition-colors duration-300">
+                <Star className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+              </div>
+              <h4 className="font-semibold text-gray-800 dark:text-white text-sm transition-colors duration-300">OVER 9,000</h4>
+              <p className="text-gray-600 dark:text-gray-300 text-sm transition-colors duration-300">GENUINE REVIEWS</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Section */}
+        <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700 transition-colors duration-300">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+               <img
+                src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiByeD0iNCIgZmlsbD0iIzAwNTJGRiIvPgo8cGF0aCBkPSJNNyA5SDE3VjE1SDdWOVoiIGZpbGw9IndoaXRlIi8+CjxyZWN0IHg9IjciIHk9IjkiIHdpZHRoPSIxMCIgaGVpZ2h0PSI2IiBmaWxsPSIjRkY1NTU1Ii8+CjwvcmVnPgo8L3N2Zz4K"
+                alt="US Flag"
+                className="w-6 h-6"
+              />
+                <span className="text-gray-600 dark:text-gray-300 text-sm transition-colors duration-300">United States</span>
+              </div>
+              <span className="text-gray-400 dark:text-gray-500 text-sm transition-colors duration-300">Copyright © 2009-2024 | All Rights Reserved</span>
+            </div>
+            
+            {/* Payment Methods */}
+            <div className="flex items-center gap-2">
+              <div className="bg-white dark:bg-gray-800  rounded px-2 py-1 transition-colors duration-300">
+                <span className="text-blue-600 dark:text-blue-400 font-bold text-sm">VISA</span>
+              </div>
+              <div className="bg-white dark:bg-gray-800  rounded px-2 py-1 transition-colors duration-300">
+                <div className="flex">
+                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                  <div className="w-3 h-3 bg-yellow-500 rounded-full -ml-1"></div>
+                </div>
+              </div>
+              <div className="bg-white dark:bg-gray-800  rounded px-2 py-1 transition-colors duration-300">
+                <span className="text-blue-600 dark:text-blue-400 font-bold text-xs">PayPal</span>
+              </div>
+              <div className="bg-white dark:bg-gray-800  rounded px-2 py-1 transition-colors duration-300">
+                <div className="flex">
+                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                  <div className="w-3 h-3 bg-yellow-500 rounded-full -ml-1"></div>
+                </div>
+              </div>
+              <div className="bg-black dark:bg-gray-700 text-white rounded px-2 py-1 transition-colors duration-300">
+                <span className="text-xs font-semibold">Apple Pay</span>
+              </div>
+              <div className="bg-black dark:bg-gray-700 text-white rounded px-2 py-1 transition-colors duration-300">
+                <span className="text-xs font-semibold">G Pay</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+);
 }
