@@ -63,7 +63,7 @@ export default function App() {
           }
         />
         <Route path="/my-cart" element={<Cart />} />
-        <Route path="/not-found" element={<PageNotFound />} />
+        <Route path="/*" element={<PageNotFound />} />
         <Route path="/wishlist" element={<WishList />} />
         <Route path="/checkout/:id" element={<CheckoutPage />} />
         <Route path="/contact" element={<Contact />} />
