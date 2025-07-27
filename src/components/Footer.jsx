@@ -33,7 +33,7 @@ export default function Footer() {
 
     {/* Main Footer Content */}
     <div className="py-12">
-      <div className="max-w-7xl mx-auto px-0 sm:px-1 lg:px-0">
+      <div className="container mx-auto px-6 mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Logo and Trust Section */}
           <div className="lg:col-span-1">

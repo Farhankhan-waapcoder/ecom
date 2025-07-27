@@ -113,7 +113,7 @@ const ProductDetails = () => {
 
 return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Product Images */}
           <div className="flex gap-4">

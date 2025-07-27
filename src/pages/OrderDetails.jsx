@@ -59,7 +59,7 @@ return (
   <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
     {/* Header */}
     <div className="bg-white dark:bg-gray-800 shadow-sm border-b dark:border-gray-700 sticky top-0 z-10">
-      <div className="max-w-7xl mx-auto px-0 sm:px-1 lg:px-0 py-3">
+      <div className="container max-w-auto px-6 py-3">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center space-x-4">
             <button
@@ -82,7 +82,7 @@ return (
     </div>
 
     {/* Body */}
-    <div className="max-w-7xl mx-auto px-0 sm:px-1 lg:px-0 py-3">
+    <div className="container max-w-auto px-6 py-3">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Section */}
         <div className="lg:col-span-2 space-y-6">

@@ -40,7 +40,7 @@ export default function CheckoutPage() {
   <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100">
     {/* Progress Steps */}
     <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-4">
-      <div className="max-w-6xl mx-auto flex justify-between items-center">
+      <div className="container mx-auto px-6 flex justify-between items-center">
         {/* Stepper Section */}
         <div className="flex items-center space-x-8">
           {/* Step 1 */}
@@ -109,7 +109,7 @@ export default function CheckoutPage() {
     </div>
 
     {/* Main Content */}
-    <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="container mx-auto px-6 py-8">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Form Section */}
         <div className="lg:col-span-2">

@@ -9,6 +9,7 @@ import WishList from "./pages/WIshList.jsx";
 import PageNotFound from "./pages/PageNotFound.jsx";
 import Footer from "./components/Footer.jsx";
 import Contact from "./pages/Contact.jsx";
+import CookiePolicy from "./pages/CookiePolicy.jsx";
 import About from "./pages/About.jsx";
 import CancellationRefund from "./pages/CancellationRefund.jsx";
 import TermsConditions from "./pages/TermsConditions.jsx";
@@ -22,6 +23,7 @@ import OrderHistory from "./pages/OrderHistory.jsx";
 import Breadcrumbs from "./components/Breadcrumbs.jsx";
 import Category from "./pages/Category.jsx";
 import { ThemeProvider } from './contexts/ThemeContext';
+import CookieConsent from "./components/CookieConsent.jsx";
 import './styles.css';
 
 export default function App() {
@@ -68,6 +70,7 @@ export default function App() {
         <Route path="/checkout/:id" element={<CheckoutPage />} />
         <Route path="/contact" element={<Contact />} />
           <Route path="/about" element={<About />} />
+          <Route path="/cookies" element={<CookiePolicy />} />
           <Route path="/cancellation-refund" element={<CancellationRefund />} />
           <Route path="/terms-conditions" element={<TermsConditions />} />
           <Route path="/shipping-delivery" element={<ShippingDelivery />} />
@@ -87,6 +90,7 @@ export default function App() {
         />
       </Routes>
       <Footer/>
+      <CookieConsent/>
     </Router>
   </ThemeProvider>
   );
