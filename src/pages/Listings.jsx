@@ -1,42 +1,13 @@
 import { useState, useEffect } from "react";
 import toast from 'react-hot-toast';
-import LoginModal from "../components/LoginModal.jsx";
-import RegisterModal from "../components/RegisterModal.jsx";
-import ForgotPasswordModal from "../components/ForgotPasswordModal.jsx";
 import ProductSlider from "../components/ProductSlider.jsx";
 import CategorySlider from "../components/CategorySlider.jsx";
 import ProductCard from "../components/ProductCard.jsx";
 
 export default function Listings() {
-  const [showForgot, setShowForgot] = useState(false);
-  const [showLogin, setShowLogin] = useState(false);
-  const [showRegister, setShowRegister] = useState(false);
   const [cartItems, setCartItems] = useState([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
-   const toggleLogin = () => {
-    setShowForgot(false);
-    setShowRegister(false);
-    setShowLogin(true);
-  };
-
-  const toggleForgot = () => {
-    setShowLogin(false);
-    setShowRegister(false);
-    setShowForgot(true);
-  };
-
-  const toggleRegister = () => {
-    setShowRegister(true);
-    setShowLogin(false);
-    setShowForgot(false);
-  };
-
-  const closeModals = () => {
-    setShowLogin(false);
-    setShowRegister(false);
-    setShowForgot(false);
-  };
  useEffect(() => {
   const storedUser = localStorage.getItem("user");
   if (storedUser) {
@@ -417,35 +388,6 @@ const topPicks = [
         ))}
       </div>
     </main>
-
-    {/* Modal Backdrop */}
-    {(showLogin || showRegister || showForgot) && (
-      <div className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm z-40 transition-all duration-300" />
-    )}
-
-    {/* Modals */}
-    {showLogin && (
-      <LoginModal
-        setIsLoggedIn={setIsLoggedIn}
-        onClose={closeModals}
-        onSwitchToRegister={toggleRegister}
-        onSwitchToForgot={toggleForgot}
-      />
-    )}
-
-    {showForgot && (
-      <ForgotPasswordModal
-        onClose={closeModals}
-        onSwitchToLogin={toggleLogin}
-      />
-    )}
-
-    {showRegister && (
-      <RegisterModal
-        onClose={closeModals}
-        onSwitchToLogin={toggleLogin}
-      />
-    )}
   </div>
 );
 }
