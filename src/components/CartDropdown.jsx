@@ -64,7 +64,8 @@ const CartDropdown = ({ isOpen, onClose }) => {
 
   const calculateTotal = () => {
     return cartItems.reduce((total, item) => {
-      const price = parseFloat(item.price.replace('$', ''));
+      console.log(item);
+      const price = parseFloat(item.price);
       return total + (price * item.quantity);
     }, 0).toFixed(2);
   };
@@ -180,7 +181,7 @@ const CartDropdown = ({ isOpen, onClose }) => {
                             <span className="font-semibold text-sm">
                               $
                               {(
-                                parseFloat(item.price.replace("$", "")) * item.quantity
+                                parseFloat(item.price) * item.quantity
                               ).toFixed(2)}
                             </span>
                             <button
