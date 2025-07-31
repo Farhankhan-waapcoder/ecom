@@ -24,6 +24,7 @@ import Breadcrumbs from "./components/Breadcrumbs.jsx";
 import Category from "./pages/Category.jsx";
 import { ThemeProvider } from './contexts/ThemeContext';
 import CookieConsent from "./components/CookieConsent.jsx";
+import Chatbot from "./components/Chatbot.jsx";
 import './styles.css';
 
 export default function App() {
@@ -49,6 +50,7 @@ export default function App() {
   <ThemeProvider>
     <Router>
        <ScrollToTop />
+       <Chatbot/>
       <Toaster position="top-right" />
       <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
       {/* <Breadcrumbs /> */}
