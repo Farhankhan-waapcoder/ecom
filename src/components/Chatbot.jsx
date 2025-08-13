@@ -15,7 +15,6 @@ const Chatbot = () => {
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const [position, setPosition] = useState({ x: window.innerWidth - 100, y: window.innerHeight - 100 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
@@ -119,7 +118,7 @@ const Chatbot = () => {
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
-
+    
     const userMessage = {
       id: messages.length + 1,
       text: inputMessage.trim(),
@@ -130,7 +129,7 @@ const Chatbot = () => {
     setMessages(prev => [...prev, userMessage]);
     setInputMessage('');
     setIsLoading(true);
-
+    updateLocalChat(inputMessage);
     try {
       const response = await chatbotAPI.processMessage(inputMessage.trim());
       
@@ -157,6 +156,17 @@ const Chatbot = () => {
       setIsLoading(false);
     }
   };
+  const updateLocalChat = (message) => {
+  const user = JSON.parse(localStorage.getItem('user'));
+
+  const chatKey = user && user.email ? `${user.email}_chat` : 'guest_chat';
+
+  const existingChat = JSON.parse(localStorage.getItem(chatKey)) || [];
+
+  const updatedChat = [...existingChat, message];
+  localStorage.setItem(chatKey, JSON.stringify(updatedChat));
+};
+
 
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
