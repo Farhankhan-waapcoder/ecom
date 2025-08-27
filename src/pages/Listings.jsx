@@ -5,6 +5,7 @@ import CategorySlider from "../components/CategorySlider.jsx";
 import ProductCard from "../components/ProductCard.jsx";
 import ProductSliderLoader from "../components/skeleton/ProductSliderLoader.jsx";
 import { productAPI, categoryAPI } from "../services/Api.js";
+import { adminApi } from '../services/Api'; // Import the admin API service
 
 export default function Listings() {
   const [cartItems, setCartItems] = useState([]);
@@ -23,6 +24,12 @@ export default function Listings() {
   
   // Error states
   const [error, setError] = useState(null);
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalProducts, setTotalProducts] = useState(0);
+  const [pageSize] = useState(12);
 
   // Initialize user and cart on component mount
   useEffect(() => {
@@ -59,7 +66,7 @@ export default function Listings() {
     }
   }, []);
 
-  // Fetch top picks (limited products with high ratings)
+  // Fetch top picks (limited products with high ratings) - only once
   useEffect(() => {
     const fetchTopPicks = async () => {
       try {
@@ -96,96 +103,101 @@ export default function Listings() {
     };
 
     fetchTopPicks();
-  }, []);
+  }, []); // Only run once
 
-  // Fetch all products
-  useEffect(() => {
-    const fetchAllProducts = async () => {
-      try {
-        setLoadingProducts(true);
-        const result = await productAPI.getAllProducts();
-        
-        if (result.success) {
-          const formattedProducts = result.data.map(product => ({
-            ...product,
-            name: product.title, // Map title to name for consistency
-            image: product.image,
-            price: product.price,
-            rating: product.rating?.rate || 0, // Extract the numeric rating
-            ratingCount: product.rating?.count || 0, // Extract rating count separately
-            originalRating: product.rating // Keep original rating object if needed
-          }));
-          
-          setAllProducts(formattedProducts);
-        } else {
-          throw new Error(result.message);
-        }
-      } catch (err) {
-        console.error("Failed to fetch products:", err);
-        setError("Failed to load products");
-        toast.error("Failed to load products");
-      } finally {
-        setLoadingProducts(false);
-      }
-    };
-
-    fetchAllProducts();
-  }, []);
-
-  // Fetch categories
+  // Fetch categories - only once
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         setLoadingCategories(true);
-        const result = await categoryAPI.getAllCategories();
+        // Fetch all products to extract unique categories
+        const result = await adminApi.get('/products?pageNumber=1&pageSize=1000'); // Get all products for categories
         
-        if (result.success) {
-          // Format categories for CategorySlider component
-          const formattedCategories = result.data.map((category, index) => ({
-            id: index + 1,
-            name: category.charAt(0).toUpperCase() + category.slice(1), // Capitalize first letter
-            slug: category,
-            image: getCategoryImage(category), // Helper function to get category images
-            description: getCategoryDescription(category)
-          }));
+        if (result.data) {
+          // Group products by category for the category slider
+          const categoryMap = new Map();
+          result.data.forEach(item => {
+            if (item.categoryName && item.categoryID) {
+              categoryMap.set(item.categoryID, {
+                id: item.categoryID,
+                name: item.categoryName,
+                image: item.categoryImage 
+                  ? `https://adminecommerce.waapcoders.in${item.categoryImage}`
+                  : '/placeholder-category.jpg'
+              });
+            }
+          });
           
-          setCategories(formattedCategories);
-        } else {
-          throw new Error(result.message);
+          const uniqueCategories = Array.from(categoryMap.values());
+          setCategories(uniqueCategories);
         }
       } catch (err) {
         console.error("Failed to fetch categories:", err);
-        setError("Failed to load categories");
-        toast.error("Failed to load categories");
+        // Categories are not critical, so we don't show error toast
       } finally {
         setLoadingCategories(false);
       }
     };
 
     fetchCategories();
-  }, []);
+  }, []); // Only run once
 
-  // Helper function to get category images (you can customize these URLs)
-  const getCategoryImage = (category) => {
-    const categoryImages = {
-      "men's clothing": "https://images.unsplash.com/photo-1516257984-b1b4d707412e?w=400&h=300&fit=crop",
-      "women's clothing": "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=400&h=300&fit=crop",
-      "jewelery": "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=400&h=300&fit=crop",
-      "electronics": "https://images.unsplash.com/photo-1468495244123-6c6c332eeece?w=400&h=300&fit=crop"
+  // Fetch paginated products
+  useEffect(() => {
+    const fetchAllProducts = async () => {
+      try {
+        setLoadingProducts(true);
+        setAllProducts([]);
+        setError(null);
+        
+        // First, get total count of products
+        const countResult = await adminApi.get('/products?pageNumber=1&pageSize=1000');
+        const totalCount = countResult.data ? countResult.data.length : 0;
+        setTotalProducts(totalCount);
+        
+        // Calculate total pages based on actual product count
+        const calculatedPages = Math.ceil(totalCount / pageSize);
+        setTotalPages(calculatedPages);
+        
+        // Now fetch the specific page
+        const result = await adminApi.get(`/products?pageNumber=${currentPage}&pageSize=${pageSize}`);
+        
+        if (result.data) {
+          // For pagination, we need to slice the data based on current page
+          const startIndex = (currentPage - 1) * pageSize;
+          const endIndex = startIndex + pageSize;
+          const paginatedData = countResult.data.slice(startIndex, endIndex);
+          
+          const formattedProducts = paginatedData.map(item => ({
+            id: item.productID,
+            title: item.productName,
+            image: item.productImage 
+              ? `https://adminecommerce.waapcoders.in/${item.productImage}`
+              : '/placeholder-image.jpg',
+            price: parseFloat(item.price),
+            category: item.categoryName,
+            brand: item.brandName || 'No Brand',
+            categoryImage: item.categoryImage 
+              ? `https://adminecommerce.waapcoders.in${item.categoryImage}`
+              : '/placeholder-category.jpg'
+          }));
+          
+          setAllProducts(formattedProducts);
+        } else {
+          setAllProducts([]);
+        }
+      } catch (err) {
+        console.error("Failed to fetch products:", err);
+        setError("Failed to load products");
+        toast.error("Failed to load products");
+        setAllProducts([]);
+      } finally {
+        setLoadingProducts(false);
+      }
     };
-    return categoryImages[category] || "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=300&fit=crop";
-  };
 
-  // Helper function to get category descriptions
-  const getCategoryDescription = (category) => {
-    const descriptions = {
-      "men's clothing": "Stylish and comfortable clothing for men",
-      "women's clothing": "Fashion-forward apparel for women",
-      "jewelery": "Elegant jewelry and accessories",
-      "electronics": "Latest gadgets and electronic devices"
-    };
-    return descriptions[category] || "Discover amazing products in this category";
-  };
+    fetchAllProducts();
+  }, [currentPage, pageSize]);  
 
   const handleAddToCart = (product) => {
     const cartKey = isLoggedIn && currentUser ? `cart_${currentUser}` : "cart_guest";
@@ -208,6 +220,16 @@ export default function Listings() {
     setCartItems(updatedCart);
 
     toast.success(`${product.name || product.title} has been added to your cart`);
+  };
+
+  // Handle page change
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages && newPage !== currentPage) {
+      setCurrentPage(newPage);
+      setAllProducts([]); // Clear products to show loading state
+      // Scroll to top when page changes
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   // Retry function for failed API calls
@@ -272,7 +294,6 @@ export default function Listings() {
             <div className="flex space-x-4 animate-pulse">
               {[...Array(4)].map((_, index) => (
                <div key={index} className="flex-shrink-0 w-full sm:w-1/2 md:w-1/3 lg:w-1/4 min-w-[200px] cursor-pointer group bg-gray-300 dark:bg-gray-600 rounded-lg h-42"></div>
-
               ))}
             </div>
           </div>
@@ -301,6 +322,11 @@ export default function Listings() {
           <p className="text-gray-600 dark:text-gray-300 transition-colors duration-300">
             Discover our hand-picked selection of premium items
           </p>
+          {totalProducts > 0 && (
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+              Showing {((currentPage - 1) * pageSize) + 1}-{Math.min(currentPage * pageSize, totalProducts)} of {totalProducts} products
+            </p>
+          )}
         </div>
 
         {loadingProducts ? (
@@ -319,7 +345,13 @@ export default function Listings() {
             {allProducts.map((product) => (
               <ProductCard
                 key={product.id}
-                product={product}
+                product={{
+                  ...product,
+                  name: product.title, // Ensure compatibility with ProductCard component
+                  rating: 4, // Default rating since it's not in the API
+                  description: `${product.title} - ${product.category}`, // Create a description
+                  stock: 10 // Default stock since it's not in the API
+                }}
                 onAddToCart={handleAddToCart}
               />
             ))}
@@ -341,12 +373,101 @@ export default function Listings() {
           </div>
         )}
 
+        {/* Pagination controls */}
+        {!loadingProducts && totalPages > 1 && (
+          <div className="mt-8 flex justify-center items-center gap-2">
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+            >
+              Previous
+            </button>
+            
+            {totalPages <= 7 ? (
+              // Show all pages if total pages are 7 or less
+              [...Array(totalPages)].map((_, index) => (
+                <button
+                  key={index + 1}
+                  onClick={() => handlePageChange(index + 1)}
+                  className={`px-4 py-2 rounded-lg transition-colors ${
+                    currentPage === index + 1
+                      ? 'bg-purple-600 text-white'
+                      : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                  }`}
+                >
+                  {index + 1}
+                </button>
+              ))
+            ) : (
+              // Show limited pages with ellipsis for large numbers
+              <>
+                <button
+                  onClick={() => handlePageChange(1)}
+                  className={`px-4 py-2 rounded-lg transition-colors ${
+                    currentPage === 1 
+                      ? 'bg-purple-600 text-white' 
+                      : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                  }`}
+                >
+                  1
+                </button>
+                
+                {currentPage > 3 && <span className="px-2 text-gray-500">...</span>}
+                
+                {Array.from({ length: 3 }, (_, i) => {
+                  const pageNum = Math.max(2, currentPage - 1) + i;
+                  if (pageNum > 1 && pageNum < totalPages && pageNum <= currentPage + 1) {
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => handlePageChange(pageNum)}
+                        className={`px-4 py-2 rounded-lg transition-colors ${
+                          currentPage === pageNum
+                            ? 'bg-purple-600 text-white'
+                            : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  }
+                  return null;
+                }).filter(Boolean)}
+                
+                {currentPage < totalPages - 2 && <span className="px-2 text-gray-500">...</span>}
+                
+                {totalPages > 1 && (
+                  <button
+                    onClick={() => handlePageChange(totalPages)}
+                    className={`px-4 py-2 rounded-lg transition-colors ${
+                      currentPage === totalPages 
+                        ? 'bg-purple-600 text-white' 
+                        : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                    }`}
+                  >
+                    {totalPages}
+                  </button>
+                )}
+              </>
+            )}
+            
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+            >
+              Next
+            </button>
+          </div>
+        )}
+
         {/* Loading indicator for background updates */}
-        {(loadingTopPicks || loadingProducts || loadingCategories) && (
+        {loadingProducts && (
           <div className="fixed bottom-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg">
             <div className="flex items-center space-x-2">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-              <span className="text-sm">Loading...</span>
+              <span className="text-sm">Loading products...</span>
             </div>
           </div>
         )}

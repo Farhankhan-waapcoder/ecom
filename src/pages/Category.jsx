@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import { adminApi } from '../services/Api';
 import { Filter, X, Grid, List } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
 import FilterSidebar from '../components/FilterSidebar';
 import HorizontalProductCard from '../components/HorizontalProductCard.jsx';
-import { categoryAPI } from '../services/Api.js';
 import { Link } from "react-router-dom";
 export default function Category() {
   const { name } = useParams();
+  const [categoryData, setCategoryData] = useState(null);
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -22,33 +23,66 @@ export default function Category() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Fetch products by category on route change
+  // Fetch category data and filter products
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchCategoryData = async () => {
       setLoading(true);
       setError('');
-      const response = await categoryAPI.getProductsByCategory(name);
-      if (response.success) {
-        const fetched = response.data.map((item) => ({
-          ...item,
-          price: `$${item.price.toFixed(2)}`, // normalize price string
-          rating: item.rating?.rate || Math.floor(Math.random() * 5) + 1, // fallback if API lacks rating
-          stock: item.rating?.count || 10,
-          brand: item.brand || "Generic", // fallback
-          category: item.category || name,
-        }));
-        setProducts(fetched);
-        setFilteredProducts(fetched);
-      } else {
-        setError(response.message);
+      
+      try {
+        const response = await adminApi.get('/menu');
+        
+        if (response.data) {
+          // Find the matching category (case-insensitive)
+          const category = response.data.find(
+            cat => cat.categoryName.toLowerCase() === name.replace(/-/g, ' ').toLowerCase()
+          );
+
+          if (category) {
+            setCategoryData(category);
+            
+            // Extract and validate products from the category's brands
+            const categoryProducts = category.brands
+              .flatMap(brand => 
+                brand.products
+                  // Filter out invalid products
+                  .filter(product => 
+                    product.productID && 
+                    product.productName && 
+                    product.productImage && 
+                    product.price
+                  )
+                  .map(product => ({
+                    id: product.productID,
+                    title: product.productName,
+                    price: parseFloat(product.price),
+                    image: `https://adminecommerce.waapcoders.in${product.productImage}`, // Add base URL
+                    brand: brand.brandName || "Generic",
+                    category: category.categoryName,
+                    rating: Math.floor(Math.random() * 5) + 1,
+                    stock: 10
+                  }))
+              )
+              .filter(Boolean); // Remove any undefined entries
+             console.log(categoryProducts);
+            setProducts(categoryProducts);
+            setFilteredProducts(categoryProducts);
+          } else {
+            setError('Category not found');
+          }
+        }
+      } catch (error) {
+        setError('Failed to fetch category data');
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
-    fetchProducts();
+
+    fetchCategoryData();
   }, [name]);
 
-  // Get unique brands from fetched products
-  const uniqueBrands = [...new Set(products.map(p => p.brand))];
+  // Get unique brands from the category's products
+  const uniqueBrands = [...new Set(products.map(p => p.brand).filter(Boolean))];
 
   // Filter logic
   useEffect(() => {
@@ -58,10 +92,9 @@ export default function Category() {
       filtered = filtered.filter(p => filters.brands.includes(p.brand));
     }
 
-    filtered = filtered.filter(p => {
-      const price = parseFloat(p.price.replace('$', ''));
-      return price >= filters.priceRange[0] && price <= filters.priceRange[1];
-    });
+    filtered = filtered.filter(p => 
+      p.price >= filters.priceRange[0] && p.price <= filters.priceRange[1]
+    );
 
     if (filters.rating > 0) {
       filtered = filtered.filter(p => p.rating >= filters.rating);
@@ -73,10 +106,10 @@ export default function Category() {
 
     switch (sortBy) {
       case 'price-low':
-        filtered.sort((a, b) => parseFloat(a.price.replace('$', '')) - parseFloat(b.price.replace('$', '')));
+        filtered.sort((a, b) => a.price - b.price);
         break;
       case 'price-high':
-        filtered.sort((a, b) => parseFloat(b.price.replace('$', '')) - parseFloat(a.price.replace('$', '')));
+        filtered.sort((a, b) => b.price - a.price);
         break;
       case 'rating':
         filtered.sort((a, b) => b.rating - a.rating);
@@ -133,7 +166,9 @@ export default function Category() {
             <nav className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300 mb-1">
             <Link to="/" className="text-blue-600 hover:underline dark:text-blue-400">Home</Link>
             <span>{'>'}</span>
-            <span className="text-gray-800 font-medium dark:text-white">{name}</span>
+            <span className="text-gray-800 font-medium dark:text-white">
+              {categoryData?.categoryName || name}
+            </span>
             </nav>
           <div className="flex items-center justify-between">
             <div>

@@ -1,11 +1,12 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState, useRef } from 'react';
 import SimilarProducts from '../components/SimilarProducts.jsx';
-import { Star, Heart, ShoppingCart, Minus, Plus, Truck, Shield, RotateCcw, ArrowLeft, Loader2, Upload, X } from 'lucide-react';
+import { Star, Heart, ShoppingCart, Minus, Plus, Truck, Shield, RotateCcw, ArrowLeft, Loader2, Upload, X, Share2, Facebook, Instagram, Twitter, Send } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { productAPI } from '../services/Api.js';
 import ProductLoader from '../components/skeleton/ProductLoader.jsx';
 import { Link } from 'react-router-dom';
+import { adminApi } from '../services/Api.js';
 const ProductDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -94,36 +95,44 @@ const ProductDetails = () => {
         setLoading(true);
         setError(null);
         
-        const result = await productAPI.getProductById(id);
-        
-        if (result.success) {
-          const apiProduct = result.data;
+        const response = await adminApi.get(`/productdetails/?productId=${id}`);
+        console.log("API Response:", response.data);
+        if (response.data.success) {
+          const apiProduct = response.data.data;
           
           // Transform API data to match component structure
           const transformedProduct = {
-            id: apiProduct.id,
-            name: apiProduct.title,
-            brand: getBrandFromCategory(apiProduct.category),
+            id: apiProduct.productID,
+            name: apiProduct.productName,
+            brand: apiProduct.brandName || "Premium Brand",
             price: formatCurrency(apiProduct.price),
-            originalPrice: `$${(apiProduct.price * 1.4).toFixed(2)}`, // Simulate original price
-            discount: "30% off", // Simulate discount
-            rating: apiProduct.rating?.rate || 0,
-            reviews: apiProduct.rating?.count || 0,
-            stock: Math.floor(Math.random() * 50) + 10, // Simulate stock
-            category: capitalizeCategory(apiProduct.category),
-            description: apiProduct.description,
-            images: generateProductImages(apiProduct.image, apiProduct.category),
-            features: generateFeatures(apiProduct.category),
-            originalData: apiProduct // Keep original data for reference
+            originalPrice: formatCurrency(apiProduct.price * 1.2), // 20% markup for original price
+            discount: "20% off", // Static discount
+            rating: 4.5, // Static rating
+            reviews: 123, // Static review count
+            stock: apiProduct.stock ?? true, // Default to true if stock is not provided
+            category: apiProduct.categoryName,
+            description: apiProduct.description || "No description available",
+            images: apiProduct.images.map(image => 
+              `https://adminecommerce.waapcoders.in${image}`
+            ),
+            features: [
+              "Premium Quality",
+              "Custom Design",
+              "Durable Material",
+              "Perfect Gift Option",
+              "Satisfaction Guaranteed"
+            ],
+            categoryID: apiProduct.categoryID,
+            brandID: apiProduct.brandID
           };
           
           setProduct(transformedProduct);
         } else {
-          throw new Error(result.message || 'Failed to fetch product');
+          throw new Error('Failed to fetch product');
         }
       } catch (err) {
-        console.error("Failed to fetch product:", err);
-        setError(err.message || "Failed to load product details");
+        setError("Failed to load product details");
         toast.error("Failed to load product details");
       } finally {
         setLoading(false);
@@ -131,96 +140,7 @@ const ProductDetails = () => {
     };
 
     fetchProduct();
-  }, [id, isLoggedIn, currentUser]);
-
-  // Helper function to get brand from category
-  const getBrandFromCategory = (category) => {
-    const brandMap = {
-      "electronics": "TechPro",
-      "jewelery": "LuxeCraft",
-      "men's clothing": "StyleMen",
-      "women's clothing": "FashionForte"
-    };
-    return brandMap[category] || "Premium Brand";
-  };
-
-  // Helper function to capitalize category
-  const capitalizeCategory = (category) => {
-    return category.split(' ').map(word => 
-      word.charAt(0).toUpperCase() + word.slice(1)
-    ).join(' ');
-  };
-
-  // Helper function to generate multiple product images
-  const generateProductImages = (mainImage, category) => {
-    const images = [mainImage]; // Start with the main image
-    
-    // Add category-specific placeholder images
-    const categoryImages = {
-      "electronics": [
-        "https://images.unsplash.com/photo-1468495244123-6c6c332eeece?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1572569511254-d8f925fe2cbb?w=800&h=600&fit=crop"
-      ],
-      "jewelery": [
-        "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?w=800&h=600&fit=crop"
-      ],
-      "men's clothing": [
-        "https://images.unsplash.com/photo-1516257984-b1b4d707412e?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1586790170083-2f9ceadc732d?w=800&h=600&fit=crop"
-      ],
-      "women's clothing": [
-        "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1445205170230-053b83016050?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=800&h=600&fit=crop"
-      ]
-    };
-
-    // Add 2-3 additional images based on category
-    const additionalImages = categoryImages[category] || categoryImages["electronics"];
-    images.push(...additionalImages.slice(0, 3));
-
-    return images;
-  };
-
-  // Helper function to generate category-specific features
-  const generateFeatures = (category) => {
-    const featureMap = {
-      "electronics": [
-        "High-quality build and components",
-        "Latest technology integration",
-        "Energy efficient design",
-        "Universal compatibility",
-        "1-year manufacturer warranty"
-      ],
-      "jewelery": [
-        "Premium quality materials",
-        "Elegant and timeless design",
-        "Hypoallergenic and safe",
-        "Comes with authenticity certificate",
-        "Perfect for special occasions"
-      ],
-      "men's clothing": [
-        "Premium fabric quality",
-        "Comfortable and breathable",
-        "Modern fit and style",
-        "Easy care and maintenance",
-        "Versatile for multiple occasions"
-      ],
-      "women's clothing": [
-        "High-quality fabric blend",
-        "Flattering and comfortable fit",
-        "Trendy and fashionable design",
-        "Machine washable",
-        "Perfect for everyday wear"
-      ]
-    };
-    
-    return featureMap[category] || featureMap["electronics"];
-  };
+  }, [id]);
 
   // Customization options
   const sizeOptions = [
@@ -392,22 +312,89 @@ const ProductDetails = () => {
 
   const currentPricing = getCurrentPricing();
 
+  const generateShareLinks = (product) => {
+    const currentUrl = window.location.href;
+    const text = `Check out ${product.name} - ${product.description}`;
+    
+    return {
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`,
+      twitter: `https://twitter.com/intent/tweet?url=${encodeURIComponent(currentUrl)}&text=${encodeURIComponent(text)}`,
+      whatsapp: `https://api.whatsapp.com/send?text=${encodeURIComponent(text + ' ' + currentUrl)}`,
+      instagram: `https://www.instagram.com/share?url=${encodeURIComponent(currentUrl)}`
+    };
+  };
+
+  const ShareButtons = () => {
+    const shareLinks = generateShareLinks(product);
+
+    return (
+      <div className="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm">
+        <div className="flex items-center gap-2 mb-3">
+          <Share2 className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+          <span className="font-medium text-slate-800 dark:text-slate-200">Share this product</span>
+        </div>
+        
+        <div className="flex gap-3">
+          <a
+            href={shareLinks.whatsapp}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center w-10 h-10 rounded-full bg-green-500 hover:bg-green-600 transition-colors"
+          >
+            <Send className="w-5 h-5 text-white" />
+          </a>
+          
+          <a
+            href={shareLinks.facebook}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-600 hover:bg-blue-700 transition-colors"
+          >
+            <Facebook className="w-5 h-5 text-white" />
+          </a>
+          
+          <a
+            href={shareLinks.twitter}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center w-10 h-10 rounded-full bg-black hover:bg-gray-800 transition-colors"
+          >
+            <Twitter className="w-5 h-5 text-white" />
+          </a>
+          
+          <a
+            href={shareLinks.instagram}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-tr from-yellow-500 via-pink-500 to-purple-500 hover:opacity-90 transition-opacity"
+          >
+            <Instagram className="w-5 h-5 text-white" />
+          </a>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       <div className="container mx-auto px-6 py-4">
         {/* Back Button */}
             {/* Breadcrumb */}
       <nav className="text-sm mb-4 text-slate-500 dark:text-slate-400 space-x-1">
-        <Link to="/" className="hover:underline text-blue-600 dark:text-blue-400">Home</Link>
+        <Link to="/" className="hover:underline text-blue-600 dark:text-blue-400">
+          Home
+        </Link>
         <span>&gt;</span>
         <Link
-          to={`/categories/${product.category.toLowerCase()}`}
+          to={`/categories/${product.categoryID}`}
           className="hover:underline text-blue-600 dark:text-blue-400 capitalize"
         >
           {product.category}
         </Link>
         <span>&gt;</span>
-        <span className="text-slate-700 dark:text-slate-200">{product.name}</span>
+        <span className="text-slate-700 dark:text-slate-200">
+          {product.name}
+        </span>
       </nav>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-[calc(100vh-120px)]">
           {/* Left Side - Static Product Images */}
@@ -540,6 +527,9 @@ const ProductDetails = () => {
               </div>
               <p className="text-sm text-slate-600 dark:text-slate-400">Free delivery on orders above $50</p>
             </div>
+
+            {/* Share Buttons */}
+            <ShareButtons />
 
             {/* Stock */}
             <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-xl">

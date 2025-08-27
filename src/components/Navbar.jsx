@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom"
 import toast from "react-hot-toast"
-import { ShoppingCart, X, Search, Heart, User, ChevronDown, Moon, Sun } from "lucide-react"
+import { ShoppingCart, X, Search, Heart, User, ChevronDown, Moon, Sun, Loader2 } from "lucide-react"
 import { useState, useEffect } from "react"
 import LoginModal from "./LoginModal"
 import { useNavigate } from "react-router-dom"
@@ -8,6 +8,7 @@ import RegisterModal from "./RegisterModal"
 import ForgotPasswordModal from "./ForgotPasswordModal"
 import CartDropdown from "./CartDropdown"
 import { useTheme } from "../contexts/ThemeContext" // Add this import
+import { adminApi } from '../services/Api';
 
 const Navbar = ({ cartCount = 0 }) => {
   const { darkMode, setDarkMode } = useTheme() // Add this line
@@ -19,6 +20,8 @@ const Navbar = ({ cartCount = 0 }) => {
   const [query, setQuery] = useState("")
   const [scrolled, setScrolled] = useState(false)
   const [currentCartCount, setCurrentCartCount] = useState(0)
+  const [menuItems, setMenuItems] = useState([]);
+  const [isMenuLoading, setIsMenuLoading] = useState(true); // Add loading state
   const navigate = useNavigate()
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
     return localStorage.getItem("user") ? true : false
@@ -76,6 +79,46 @@ const Navbar = ({ cartCount = 0 }) => {
       window.removeEventListener('storage', updateCartCount);
       clearInterval(interval);
     };
+  }, []);
+
+  // Fetch menu items from API
+  useEffect(() => {
+    const fetchMenuItems = async () => {
+      setIsMenuLoading(true);
+      try {
+        const response = await adminApi.get('/menu');
+        if (response.data) {
+          // Extract and transform category data
+          const categories = response.data
+            .filter(category => category.categoryName) // Filter out any empty category names
+            .map(category => ({
+              name: category.categoryName,
+              path: `/categories/${category.categoryName.toLowerCase().replace(/\s+/g, '-')}`,
+              image: category.categoryImage
+            }))
+            .sort((a, b) => a.name.localeCompare(b.name)); // Sort alphabetically
+
+          setMenuItems(categories);
+        }
+      } catch (error) {
+        // Fallback menu items if API fails
+        setMenuItems([
+          { name: "BOTTLE", path: "/menu/bottle" },
+          { name: "COMBOS", path: "/menu/combos" },
+          { name: "CUSHIONS", path: "/menu/cushions" },
+          { name: "FRAMES", path: "/menu/frames" },
+          { name: "WALLET", path: "/menu/wallet" },
+          { name: "WALL CLOCK", path: "/menu/wall-clock" },
+          { name: "DIWALI DIYA", path: "/menu/diwali-diya" },
+          { name: "CUTOUT STANDY", path: "/menu/cutout-standy" },
+          // Add other categories as fallback
+        ]);
+      } finally {
+        setIsMenuLoading(false);
+      }
+    };
+
+    fetchMenuItems();
   }, []);
 
   // Close mobile menu on resize
@@ -155,16 +198,6 @@ const Navbar = ({ cartCount = 0 }) => {
     setDarkMode(!darkMode)
   }
 
-  const menuItems = [
-    { name: "Your Orders", path: "/order-history" },
-    { name: "Diwali Diya", path: "/" },
-    { name: "Frames", path: "/" },
-    { name: "Combos", path: "/"},
-    { name: "Cushions", path: "/" },
-    { name: "Cutout Standy", path: "/" },
-    { name: "Wallet", path: "/" },
-  ]
-
   return (
     <>
       <header
@@ -208,35 +241,45 @@ const Navbar = ({ cartCount = 0 }) => {
 
             {/* Desktop Menu */}
             <nav className="hidden xl:flex items-center gap-1">
-              {menuItems.slice(0, 5).map((item, index) => (
-                <Link
-                  key={index}
-                  to={item.path}
-                  className="relative px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-[#007580] dark:hover:text-teal-400 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 group"
-                >
-                  <span className="flex items-center space-x-1">
-                    <span>{item.name}</span>
-                  </span>
-                  <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-[#007580] dark:bg-teal-400 group-hover:w-full transition-all duration-300"></div>
-                </Link>
-              ))}
-              <div className="relative group">
-                <button className="flex items-center space-x-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-[#007580] dark:hover:text-teal-400 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300">
-                  <span>More</span>
-                  <ChevronDown className="w-4 h-4 group-hover:rotate-180 transition-transform duration-300" />
-                </button>
-                <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-50">
-                  {menuItems.slice(5).map((item, index) => (
+              {isMenuLoading ? (
+                // Loading skeleton
+                <div className="flex items-center gap-2">
+                  <Loader2 className="w-5 h-5 animate-spin text-[#007580] dark:text-teal-400" />
+                  <span className="text-sm text-gray-500 dark:text-gray-400">Loading menu...</span>
+                </div>
+              ) : (
+                <>
+                  {menuItems.slice(0, 5).map((item, index) => (
                     <Link
                       key={index}
-                      to={item.path}
-                      className="flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:text-[#007580] dark:hover:text-teal-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 first:rounded-t-xl last:rounded-b-xl"
+                      to={`/categories/${item.name.toLowerCase().replace(/\s+/g, '-')}`} // Changed from /menu to /categories
+                      className="relative px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-[#007580] dark:hover:text-teal-400 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 group"
                     >
-                      <span>{item.name}</span>
+                      <span className="flex items-center space-x-1">
+                        <span>{item.name}</span>
+                      </span>
+                      <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-[#007580] dark:bg-teal-400 group-hover:w-full transition-all duration-300"></div>
                     </Link>
                   ))}
-                </div>
-              </div>
+                  <div className="relative group">
+                    <button className="flex items-center space-x-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-[#007580] dark:hover:text-teal-400 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300">
+                      <span>More</span>
+                      <ChevronDown className="w-4 h-4 group-hover:rotate-180 transition-transform duration-300" />
+                    </button>
+                    <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-50">
+                      {menuItems.slice(5).map((item, index) => (
+                        <Link
+                          key={index}
+                          to={`/categories/${item.name.toLowerCase().replace(/\s+/g, '-')}`} // Changed path here too
+                          className="flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:text-[#007580] dark:hover:text-teal-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 first:rounded-t-xl last:rounded-b-xl"
+                        >
+                          <span>{item.name}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
             </nav>
 
             {/* Right Actions */}
@@ -513,21 +556,36 @@ const Navbar = ({ cartCount = 0 }) => {
 
             {/* Mobile Navigation */}
             <nav className="space-y-2">
-              {menuItems.map((item, index) => (
-                <Link
-                  key={index}
-                  to={item.path}
-                  onClick={closeMobileMenu}
-                  className="flex items-center space-x-4 p-4 text-gray-700 dark:text-gray-300 hover:text-[#007580] dark:hover:text-teal-400 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-2xl transition-all duration-300 group"
-                  style={{ animationDelay: `${index * 50}ms` }}
-                >
-                  <span className="font-medium">{item.name}</span>
-                  
-                  <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <ChevronDown className="w-4 h-4 -rotate-90" />
+              {isMenuLoading ? (
+                // Mobile loading skeleton
+                <div className="flex flex-col space-y-2 p-4">
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="w-5 h-5 animate-spin text-[#007580] dark:text-teal-400" />
+                    <span className="text-sm text-gray-500 dark:text-gray-400">Loading menu...</span>
                   </div>
-                </Link>
-              ))}
+                  {[1, 2, 3].map((_, index) => (
+                    <div 
+                      key={index}
+                      className="h-12 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse"
+                    />
+                  ))}
+                </div>
+              ) : (
+                menuItems.map((item, index) => (
+                  <Link
+                    key={index}
+                    to={`/categories/${item.name.toLowerCase().replace(/\s+/g, '-')}`} // Changed here as well
+                    onClick={closeMobileMenu}
+                    className="flex items-center space-x-4 p-4 text-gray-700 dark:text-gray-300 hover:text-[#007580] dark:hover:text-teal-400 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-2xl transition-all duration-300 group"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
+                    <span className="font-medium">{item.name}</span>
+                    <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <ChevronDown className="w-4 h-4 -rotate-90" />
+                    </div>
+                  </Link>
+                ))
+              )}
             </nav>
           </div>
         </div>

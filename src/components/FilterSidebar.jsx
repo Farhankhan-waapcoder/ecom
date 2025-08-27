@@ -1,6 +1,12 @@
 import { Star } from "lucide-react";
+import PropTypes from "prop-types";
 
-export default function FilterSidebar({ filters, setFilters, uniqueBrands }) {
+export default function FilterSidebar({ filters, setFilters, uniqueBrands = [] }) {
+  // Add validation for uniqueBrands
+  const validBrands = uniqueBrands.filter(brand => 
+    brand && typeof brand === 'string'
+  );
+
   const handleBrandChange = (brand) => {
     setFilters((prev) => ({
       ...prev,
@@ -50,17 +56,25 @@ return (
     <div className="mb-6">
       <h4 className="font-medium mb-3">Brands</h4>
       <div className="space-y-2">
-        {uniqueBrands.map((brand) => (
-          <label key={brand} className="flex items-center">
-            <input
-              type="checkbox"
-              checked={filters.brands.includes(brand)}
-              onChange={() => handleBrandChange(brand)}
-              className="rounded border-gray-300 dark:border-gray-600 text-purple-600 focus:ring-purple-500"
-            />
-            <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{brand}</span>
-          </label>
-        ))}
+        {validBrands.length > 0 ? (
+          validBrands.map((brand) => (
+            <label key={brand} className="flex items-center">
+              <input
+                type="checkbox"
+                checked={filters.brands.includes(brand)}
+                onChange={() => handleBrandChange(brand)}
+                className="rounded border-gray-300 dark:border-gray-600 text-purple-600 focus:ring-purple-500"
+              />
+              <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                {brand}
+              </span>
+            </label>
+          ))
+        ) : (
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            No brands available
+          </p>
+        )}
       </div>
     </div>
 
@@ -126,3 +140,15 @@ return (
   </div>
 );
 }
+
+// Add PropTypes for better type checking
+FilterSidebar.propTypes = {
+  filters: PropTypes.shape({
+    brands: PropTypes.arrayOf(PropTypes.string),
+    priceRange: PropTypes.arrayOf(PropTypes.number),
+    rating: PropTypes.number,
+    inStock: PropTypes.bool
+  }).isRequired,
+  setFilters: PropTypes.func.isRequired,
+  uniqueBrands: PropTypes.arrayOf(PropTypes.string)
+};

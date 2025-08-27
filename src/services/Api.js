@@ -7,6 +7,29 @@ const fakeStoreApi = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+// Create axios instance for Admin Ecommerce API
+const adminApi = axios.create({
+  baseURL: 'http://localhost:5000/api', // Point to your local proxy server
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Add an interceptor to handle authentication
+adminApi.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 // PRODUCTS API CALLS
 
 export const productAPI = {
@@ -396,3 +419,6 @@ export default {
   authAPI,
   utilityAPI,
 };
+
+// Export both API instances
+export { fakeStoreApi, adminApi };
