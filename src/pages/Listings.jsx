@@ -94,7 +94,6 @@ export default function Listings() {
           throw new Error(result.message);
         }
       } catch (err) {
-        console.error("Failed to fetch top picks:", err);
         setError("Failed to load top picks");
         toast.error("Failed to load top picks");
       } finally {
@@ -181,7 +180,6 @@ export default function Listings() {
               ? `https://adminecommerce.waapcoders.in${item.categoryImage}`
               : '/placeholder-category.jpg'
           }));
-          
           setAllProducts(formattedProducts);
         } else {
           setAllProducts([]);

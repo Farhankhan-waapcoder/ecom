@@ -64,7 +64,7 @@ export default function Category() {
                   }))
               )
               .filter(Boolean); // Remove any undefined entries
-             console.log(categoryProducts);
+            
             setProducts(categoryProducts);
             setFilteredProducts(categoryProducts);
           } else {
@@ -161,15 +161,10 @@ export default function Category() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-40">
+
+      {/* Category Header Section */}
+      <div className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-40 py-4">
         <div className="max-w-auto mx-auto px-6">
-            <nav className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300 mb-1">
-            <Link to="/" className="text-blue-600 hover:underline dark:text-blue-400">Home</Link>
-            <span>{'>'}</span>
-            <span className="text-gray-800 font-medium dark:text-white">
-              {categoryData?.categoryName || name}
-            </span>
-            </nav>
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white capitalize">
@@ -208,7 +203,16 @@ export default function Category() {
           </div>
         </div>
       </div>
-
+       {/* Breadcrumb Section */}
+        <nav className="text-sm mb-4 text-slate-500 dark:text-slate-400 space-x-1 px-6 py-4">
+          <Link to="/" className="hover:underline text-blue-600 dark:text-blue-400">
+            Home
+          </Link>
+          <span>&gt;</span>
+          <span className="text-slate-700 dark:text-slate-200">
+            {categoryData?.categoryName || name.replace(/-/g, ' ')}
+          </span>
+        </nav>
       <div className="max-w-auto mx-auto px-6 py-3">
         <div className="flex gap-8">
           {/* Desktop Sidebar */}

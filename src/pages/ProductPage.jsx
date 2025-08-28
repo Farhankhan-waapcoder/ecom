@@ -96,7 +96,6 @@ const ProductDetails = () => {
         setError(null);
         
         const response = await adminApi.get(`/productdetails/?productId=${id}`);
-        console.log("API Response:", response.data);
         if (response.data.success) {
           const apiProduct = response.data.data;
           
