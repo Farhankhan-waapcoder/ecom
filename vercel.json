@@ -5,16 +5,6 @@
       "destination": "https://adminecommerce.waapcoders.in/api/$1"
     }
   ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "https://adminecommerce.waapcoders.in/api/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
-  ],
   "headers": [
     {
       "source": "/api/(.*)",
