@@ -2,15 +2,15 @@ import axios from 'axios';
 
 // Create a separate axios instance for FakeStoreAPI (since it doesn't need auth)
 const fakeStoreApi = axios.create({
-  baseURL: 'https://fakestoreapi.com',
+  baseURL: import.meta.env.VITE_FAKE_STORE_API_URL || 'https://fakestoreapi.com',
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Create axios instance for Admin Ecommerce API
+// Create axios instance for Admin Ecommerce API using proxy
 const adminApi = axios.create({
-  baseURL: 'http://localhost:5000/api', // Point to your local proxy server
+  baseURL: '/api', // Use proxy route instead of direct URL
   headers: {
     'Content-Type': 'application/json',
   },
@@ -26,6 +26,21 @@ adminApi.interceptors.request.use(
     return config;
   },
   (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Add response interceptor for better error handling
+adminApi.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (error) => {
+    if (error.response?.status === 401) {
+      // Handle unauthorized access
+      localStorage.removeItem('token');
+      window.location.href = '/';
+    }
     return Promise.reject(error);
   }
 );
