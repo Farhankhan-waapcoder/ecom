@@ -20,7 +20,6 @@ import Search from "./pages/Search.jsx";
 import CheckoutPage from "./pages/CheckoutPage.jsx";
 import OrderDetails from "./pages/OrderDetails.jsx";
 import OrderHistory from "./pages/OrderHistory.jsx";
-import Breadcrumbs from "./components/Breadcrumbs.jsx";
 import Category from "./pages/Category.jsx";
 import { ThemeProvider } from './contexts/ThemeContext';
 import CookieConsent from "./components/CookieConsent.jsx";
@@ -36,7 +35,7 @@ export default function App() {
     if (storedUser) {
       try {
         const parsedUser = JSON.parse(storedUser);
-        setCurrentUser(parsedUser.email); // or `parsedUser` if you need full object
+        setCurrentUser(parsedUser.email);
         setIsLoggedIn(true);
       } catch (err) {
         console.error("Failed to parse user:", err);
@@ -47,30 +46,42 @@ export default function App() {
   }, []);
 
   return (
-  <ThemeProvider>
-    <Router>
-       <ScrollToTop />
-       <Chatbot/>
-      <Toaster position="top-right" />
-      <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
-      {/* <Breadcrumbs /> */}
-      <Routes>
-
-        <Route
-          path="/"
-          element={
-            <Listings
-              isLoggedIn={isLoggedIn}
-              setIsLoggedIn={setIsLoggedIn}
-              currentUser={currentUser}
-            />
-          }
-        />
-        <Route path="/my-cart" element={<Cart />} />
-        <Route path="/*" element={<PageNotFound />} />
-        <Route path="/wishlist" element={<WishList />} />
-        <Route path="/checkout/:id" element={<CheckoutPage />} />
-        <Route path="/contact" element={<Contact />} />
+    <ThemeProvider>
+      <Router>
+        <ScrollToTop />
+        <Chatbot/>
+        <Toaster position="top-right" />
+        <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
+        
+        <Routes>
+          {/* Home page with pagination support */}
+          <Route
+            path="/"
+            element={
+              <Listings
+                isLoggedIn={isLoggedIn}
+                setIsLoggedIn={setIsLoggedIn}
+                currentUser={currentUser}
+              />
+            }
+          />
+          
+          {/* Paginated home route */}
+          <Route
+            path="/page/:pageNumber"
+            element={
+              <Listings
+                isLoggedIn={isLoggedIn}
+                setIsLoggedIn={setIsLoggedIn}
+                currentUser={currentUser}
+              />
+            }
+          />
+          
+          <Route path="/my-cart" element={<Cart />} />
+          <Route path="/wishlist" element={<WishList />} />
+          <Route path="/checkout/:id" element={<CheckoutPage />} />
+          <Route path="/contact" element={<Contact />} />
           <Route path="/about" element={<About />} />
           <Route path="/cookies" element={<CookiePolicy />} />
           <Route path="/cancellation-refund" element={<CancellationRefund />} />
@@ -80,20 +91,22 @@ export default function App() {
           <Route path="/search/:query" element={<Search />} />
           <Route path="/order-history" element={<OrderHistory />} />
           <Route path="/order/:id" element={<OrderDetails />} />
-        <Route path="/categories/:name" element={<Category />} />
-        <Route
-          path="/product/:id"
-          element={
-            <ProductPage
-              isLoggedIn={isLoggedIn}
-              currentUser={currentUser}
-            />
-          }
-        />
-      </Routes>
-      <Footer/>
-      <CookieConsent/>
-    </Router>
-  </ThemeProvider>
+          <Route path="/categories/:name" element={<Category />} />
+          <Route
+            path="/product/:id"
+            element={
+              <ProductPage
+                isLoggedIn={isLoggedIn}
+                currentUser={currentUser}
+              />
+            }
+          />
+          <Route path="/*" element={<PageNotFound />} />
+        </Routes>
+        
+        <Footer/>
+        <CookieConsent/>
+      </Router>
+    </ThemeProvider>
   );
 }

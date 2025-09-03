@@ -12,7 +12,7 @@ const fakeStoreApi = axios.create({
 const adminApi = axios.create({
   baseURL: '/api', // Use proxy route instead of direct URL
   headers: {
-    'Content-Type': 'application/json',
+    'Content-Type': 'application/json', 
   },
 });
 

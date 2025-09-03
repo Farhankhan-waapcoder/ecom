@@ -231,7 +231,12 @@ const ProductDetails = () => {
     const rect = e.currentTarget.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
-    setZoomPosition({ x, y });
+    
+    // Ensure the zoom position stays within bounds
+    const clampedX = Math.max(0, Math.min(100, x));
+    const clampedY = Math.max(0, Math.min(100, y));
+    
+    setZoomPosition({ x: clampedX, y: clampedY });
   };
 
   const handleMouseEnter = () => {
@@ -396,104 +401,108 @@ const ProductDetails = () => {
         </span>
       </nav>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-[calc(100vh-120px)]">
-          {/* Left Side - Static Product Images */}
+          {/* Left Side - Product Images */}
           <div className="relative">
-            <div className="sticky top-0">
-              <div className="flex gap-4">
-                {/* Thumbnail Images Sidebar */}
-                <div className="flex flex-col gap-3">
-                  {product.images.map((image, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setSelectedImageIndex(index)}
-                      className={`relative overflow-hidden rounded-xl transition-all duration-200 border-2 ${
-                        selectedImageIndex === index 
-                          ? 'border-blue-500 dark:border-blue-400 shadow-lg scale-105' 
-                          : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 hover:scale-105 opacity-70 hover:opacity-100'
-                      }`}
-                    >
-                      <img
-                        src={image}
-                        alt={`${product.name} view ${index + 1}`}
-                        className="w-16 h-16 lg:w-20 lg:h-20 object-cover"
-                        onError={(e) => {
-                          e.target.src = 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=400&fit=crop';
-                        }}
-                      />
-                    </button>
-                  ))}
-                </div>
+  <div className="sticky top-4 space-y-4">
+    <div className="flex flex-col md:flex-row gap-4">
+      {/* Thumbnail Images Sidebar with scrollbar */}
+      <div className="order-2 md:order-1 flex md:flex-col gap-3 overflow-x-auto md:overflow-y-auto md:max-h-[500px] scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent hover:scrollbar-thumb-gray-400 dark:hover:scrollbar-thumb-gray-500 pr-2">
+        {product.images.map((image, index) => (
+          <button
+            key={index}
+            onClick={() => setSelectedImageIndex(index)}
+            className={`flex-shrink-0 relative overflow-hidden rounded-xl transition-all duration-200 border-2 ${
+              selectedImageIndex === index 
+                ? 'border-blue-500 dark:border-blue-400 shadow-lg scale-105' 
+                : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 hover:scale-105 opacity-70 hover:opacity-100'
+            }`}
+          >
+            <img
+              src={image}
+              alt={`${product.name} view ${index + 1}`}
+              className="w-16 h-16 md:w-20 md:h-20 object-cover"
+              onError={(e) => {
+                e.target.src = 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=400&fit=crop';
+              }}
+            />
+          </button>
+        ))}
+      </div>
 
-                {/* Main Image Container */}
-                <div className="flex-1">
-                  <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-800 shadow-lg group">
-                    <div 
-                      className="relative w-full h-96 lg:h-[500px] overflow-hidden cursor-crosshair"
-                      onMouseMove={handleMouseMove}
-                      onMouseEnter={handleMouseEnter}
-                      onMouseLeave={handleMouseLeave}
-                    >
-                      <img
-                        src={product.images[selectedImageIndex]}
-                        alt={product.name}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.target.src = 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&h=600&fit=crop';
-                        }}
-                      />
-                      
-                      {/* Zoom Indicator Overlay */}
-                      {isZoomed && (
-                        <div 
-                          className="absolute border-2 border-white dark:border-slate-300 shadow-lg pointer-events-none"
-                          style={{
-                            width: '100px',
-                            height: '100px',
-                            left: `${zoomPosition.x}%`,
-                            top: `${zoomPosition.y}%`,
-                            transform: 'translate(-50%, -50%)',
-                            backgroundColor: 'rgba(255, 255, 255, 0.3)',
-                          }}
-                        />
-                      )}
-                    </div>
+      {/* Main Image Container */}
+      <div className="order-1 md:order-2 flex-1">
+        <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-800 shadow-lg">
+          <div 
+            className="relative w-full h-64 sm:h-80 md:h-96 lg:h-[500px] overflow-hidden cursor-crosshair"
+            onMouseMove={handleMouseMove}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+          >
+            <img
+              src={uploadedImage || product.images[selectedImageIndex]}
+              alt={product.name}
+              className="w-full h-full object-contain"
+              onError={(e) => {
+                e.target.src = 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&h=600&fit=crop';
+              }}
+              
+            />
+            
+            {/* Zoom indicator overlay - shows the area being magnified */}
+            {isZoomed && (
+              <div
+                className="absolute border-2 border-blue-500 bg-blue-500/20 pointer-events-none rounded-lg"
+                style={{
+                  width: '80px',
+                  height: '80px',
+                  left: `${zoomPosition.x}%`,
+                  top: `${zoomPosition.y}%`,
+                  transform: 'translate(-50%, -50%)',
+                }}
+              />
+            )}
+          </div>
 
-                    {/* Wishlist Button */}
-                    <button
-                      onClick={handleToggleWishlist}
-                      className={`absolute top-4 right-4 p-3 rounded-full backdrop-blur-sm transition-all duration-200 z-20 ${
-                        isWishlisted 
-                          ? 'bg-red-100 dark:bg-red-900/50 text-red-500 dark:text-red-400 scale-110' 
-                          : 'bg-white/80 dark:bg-slate-800/80 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-slate-800 hover:scale-110'
-                      }`}
-                    >
-                      <Heart className={`w-6 h-6 ${isWishlisted ? 'fill-current' : ''}`} />
-                    </button>
-
-                    {/* Smart Positioned Zoom Popup */}
-                    {isZoomed && (
-                      <div 
-                        className="absolute w-64 h-64 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border-4 border-white dark:border-slate-700 overflow-hidden z-30 pointer-events-none"
-                        style={getZoomPopupPosition()}
-                      >
-                        <div
-                          className="w-full h-full bg-no-repeat"
-                          style={{
-                            backgroundImage: `url(${uploadedImage || product.images[selectedImageIndex]})`,
-                            backgroundPosition: `${zoomPosition.x}% ${zoomPosition.y}%`,
-                            backgroundSize: '300%',
-                          }}
-                        />
-                        <div className="absolute bottom-2 left-2 bg-black/70 dark:bg-slate-900/80 text-white text-xs px-2 py-1 rounded">
-                          Zoom: 3x
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
+          {/* Zoom Panel - Fixed position with corrected zoom calculation */}
+          {isZoomed && (
+            <div className="fixed top-1/2 right-8 transform -translate-y-1/2 w-80 h-80 border-4 border-white dark:border-gray-700 rounded-xl shadow-2xl pointer-events-none z-50 overflow-hidden bg-white dark:bg-slate-800">
+              <div className="relative w-full h-full overflow-hidden">
+                <img
+                  src={uploadedImage || product.images[selectedImageIndex]}
+                  alt={`${product.name} - Zoomed`}
+                  className="absolute w-full h-full object-cover"
+                  style={{
+                    // Scale the image up by 3x instead of 4x
+                    transform: `scale(3)`,
+                    // Position the scaled image so the cursor area is centered
+                    transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
+                  }}
+                />
+              </div>
+              
+              {/* Zoom panel header - updated text */}
+              <div className="absolute top-2 left-2 bg-black/70 text-white px-2 py-1 rounded text-xs font-medium">
+                3x Zoom
               </div>
             </div>
-          </div>
+          )}
+
+          {/* Wishlist Button */}
+          <button
+            onClick={handleToggleWishlist}
+            className={`absolute top-4 right-4 p-2 md:p-3 rounded-full backdrop-blur-sm transition-all duration-200 z-20 ${
+              isWishlisted 
+                ? 'bg-red-100 dark:bg-red-900/50 text-red-500 dark:text-red-400 scale-110' 
+                : 'bg-white/80 dark:bg-slate-800/80 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-slate-800 hover:scale-110'
+            }`}
+          >
+            <Heart className={`w-5 h-5 md:w-6 md:h-6 ${isWishlisted ? 'fill-current' : ''}`} />
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
           {/* Right Side - Scrollable Content */}
           <div className="overflow-y-auto pr-4 space-y-6 hide-scrollbar">

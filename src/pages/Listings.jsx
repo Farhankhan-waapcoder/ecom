@@ -1,16 +1,20 @@
 import { useState, useEffect } from "react";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import toast from 'react-hot-toast';
 import ProductSlider from "../components/ProductSlider.jsx";
 import CategorySlider from "../components/CategorySlider.jsx";
 import ProductCard from "../components/ProductCard.jsx";
 import ProductSliderLoader from "../components/skeleton/ProductSliderLoader.jsx";
-import { productAPI, categoryAPI } from "../services/Api.js";
-import { adminApi } from '../services/Api'; // Import the admin API service
+import { productAPI } from "../services/Api.js";
+import { adminApi } from '../services/Api';
 
-export default function Listings() {
+export default function Listings({ isLoggedIn, setIsLoggedIn, currentUser: propCurrentUser }) {
+  const { pageNumber } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+  
   const [cartItems, setCartItems] = useState([]);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState(propCurrentUser);
   
   // API data states
   const [topPicks, setTopPicks] = useState([]);
@@ -30,6 +34,17 @@ export default function Listings() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalProducts, setTotalProducts] = useState(0);
   const [pageSize] = useState(12);
+
+  // Initialize current page from URL
+  useEffect(() => {
+    const urlPage = parseInt(pageNumber) || 1;
+    if (urlPage !== currentPage) {
+      // Clear products immediately when page changes
+      setAllProducts([]);
+      setLoadingProducts(true);
+      setCurrentPage(urlPage);
+    }
+  }, [pageNumber, currentPage]);
 
   // Initialize user and cart on component mount
   useEffect(() => {
@@ -64,7 +79,7 @@ export default function Listings() {
         setCartItems([]);
       }
     }
-  }, []);
+  }, [setIsLoggedIn]);
 
   // Fetch top picks (limited products with high ratings) - only once
   useEffect(() => {
@@ -74,19 +89,18 @@ export default function Listings() {
         const result = await productAPI.getAllProducts();
         
         if (result.success) {
-          // Filter and sort by rating to get top picks
           const topRatedProducts = result.data
             .filter(product => product.rating?.rate >= 4.0)
             .sort((a, b) => (b.rating?.rate || 0) - (a.rating?.rate || 0))
             .slice(0, 5)
             .map(product => ({
               ...product,
-              name: product.title, // Map title to name for consistency
+              name: product.title,
               image: product.image,
               price: product.price,
-              rating: product.rating?.rate || 0, // Extract the numeric rating
-              ratingCount: product.rating?.count || 0, // Extract rating count separately
-              originalRating: product.rating // Keep original rating object if needed
+              rating: product.rating?.rate || 0,
+              ratingCount: product.rating?.count || 0,
+              originalRating: product.rating
             }));
           
           setTopPicks(topRatedProducts);
@@ -102,18 +116,16 @@ export default function Listings() {
     };
 
     fetchTopPicks();
-  }, []); // Only run once
+  }, []);
 
   // Fetch categories - only once
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         setLoadingCategories(true);
-        // Fetch all products to extract unique categories
-        const result = await adminApi.get('/products?pageNumber=1&pageSize=1000'); // Get all products for categories
+        const result = await adminApi.get('/products?pageNumber=1&pageSize=1000');
         
         if (result.data) {
-          // Group products by category for the category slider
           const categoryMap = new Map();
           result.data.forEach(item => {
             if (item.categoryName && item.categoryID) {
@@ -132,24 +144,24 @@ export default function Listings() {
         }
       } catch (err) {
         console.error("Failed to fetch categories:", err);
-        // Categories are not critical, so we don't show error toast
       } finally {
         setLoadingCategories(false);
       }
     };
 
     fetchCategories();
-  }, []); // Only run once
+  }, []);
 
-  // Fetch paginated products
+  // Fetch paginated products - only when currentPage changes
   useEffect(() => {
     const fetchAllProducts = async () => {
       try {
         setLoadingProducts(true);
-        setAllProducts([]);
         setError(null);
+        // Clear previous products immediately
+        setAllProducts([]);
         
-        // First, get total count of products
+        // Get total count of products
         const countResult = await adminApi.get('/products?pageNumber=1&pageSize=1000');
         const totalCount = countResult.data ? countResult.data.length : 0;
         setTotalProducts(totalCount);
@@ -158,32 +170,26 @@ export default function Listings() {
         const calculatedPages = Math.ceil(totalCount / pageSize);
         setTotalPages(calculatedPages);
         
-        // Now fetch the specific page
-        const result = await adminApi.get(`/products?pageNumber=${currentPage}&pageSize=${pageSize}`);
+        // For pagination, slice the data based on current page
+        const startIndex = (currentPage - 1) * pageSize;
+        const endIndex = startIndex + pageSize;
+        const paginatedData = countResult.data.slice(startIndex, endIndex);
         
-        if (result.data) {
-          // For pagination, we need to slice the data based on current page
-          const startIndex = (currentPage - 1) * pageSize;
-          const endIndex = startIndex + pageSize;
-          const paginatedData = countResult.data.slice(startIndex, endIndex);
-          
-          const formattedProducts = paginatedData.map(item => ({
-            id: item.productID,
-            title: item.productName,
-            image: item.productImage 
-              ? `https://adminecommerce.waapcoders.in/${item.productImage}`
-              : '/placeholder-image.jpg',
-            price: parseFloat(item.price),
-            category: item.categoryName,
-            brand: item.brandName || 'No Brand',
-            categoryImage: item.categoryImage 
-              ? `https://adminecommerce.waapcoders.in${item.categoryImage}`
-              : '/placeholder-category.jpg'
-          }));
-          setAllProducts(formattedProducts);
-        } else {
-          setAllProducts([]);
-        }
+        const formattedProducts = paginatedData.map(item => ({
+          id: item.productID,
+          title: item.productName,
+          image: item.productImage 
+            ? `https://adminecommerce.waapcoders.in/${item.productImage}`
+            : '/placeholder-image.jpg',
+          price: parseFloat(item.price),
+          category: item.categoryName,
+          brand: item.brandName || 'No Brand',
+          categoryImage: item.categoryImage 
+            ? `https://adminecommerce.waapcoders.in${item.categoryImage}`
+            : '/placeholder-category.jpg'
+        }));
+        
+        setAllProducts(formattedProducts);
       } catch (err) {
         console.error("Failed to fetch products:", err);
         setError("Failed to load products");
@@ -195,7 +201,7 @@ export default function Listings() {
     };
 
     fetchAllProducts();
-  }, [currentPage, pageSize]);  
+  }, [currentPage, pageSize]);
 
   const handleAddToCart = (product) => {
     const cartKey = isLoggedIn && currentUser ? `cart_${currentUser}` : "cart_guest";
@@ -220,11 +226,20 @@ export default function Listings() {
     toast.success(`${product.name || product.title} has been added to your cart`);
   };
 
-  // Handle page change
+  // Handle page change with URL navigation
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages && newPage !== currentPage) {
-      setCurrentPage(newPage);
-      setAllProducts([]); // Clear products to show loading state
+      // Clear products immediately before navigation
+      setAllProducts([]);
+      setLoadingProducts(true);
+      
+      // Update URL based on page number
+      if (newPage === 1) {
+        navigate('/', { replace: true });
+      } else {
+        navigate(`/page/${newPage}`, { replace: true });
+      }
+      
       // Scroll to top when page changes
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -260,11 +275,9 @@ export default function Listings() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
       <main className="container mx-auto px-6 py-3">
-        {/* Top Picks Slider */}
+        {/* Top Picks Slider - Only loads once */}
         {loadingTopPicks ? (
-          <ProductSliderLoader 
-            title="Our Top Picks"
-          />
+          <ProductSliderLoader title="Our Top Picks" />
         ) : topPicks.length > 0 ? (
           <ProductSlider
             products={topPicks}
@@ -283,7 +296,7 @@ export default function Listings() {
           </div>
         )}
 
-        {/* Categories Slider */}
+        {/* Categories Slider - Only loads once */}
         {loadingCategories ? (
           <div className="mb-8">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
@@ -291,7 +304,7 @@ export default function Listings() {
             </h2>
             <div className="flex space-x-4 animate-pulse">
               {[...Array(4)].map((_, index) => (
-               <div key={index} className="flex-shrink-0 w-full sm:w-1/2 md:w-1/3 lg:w-1/4 min-w-[200px] cursor-pointer group bg-gray-300 dark:bg-gray-600 rounded-lg h-42"></div>
+                <div key={index} className="flex-shrink-0 w-full sm:w-1/2 md:w-1/3 lg:w-1/4 min-w-[200px] cursor-pointer group bg-gray-300 dark:bg-gray-600 rounded-lg h-42"></div>
               ))}
             </div>
           </div>
@@ -312,7 +325,7 @@ export default function Listings() {
           </div>
         )}
 
-        {/* All Products Grid */}
+        {/* All Products Grid - Updates with pagination */}
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 transition-colors duration-300">
             Featured Products
@@ -322,14 +335,15 @@ export default function Listings() {
           </p>
           {totalProducts > 0 && (
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-              Showing {((currentPage - 1) * pageSize) + 1}-{Math.min(currentPage * pageSize, totalProducts)} of {totalProducts} products
+              Showing {((currentPage - 1) * pageSize) + 1}-{Math.min(currentPage * pageSize, totalProducts)} of {totalProducts} products • Page {currentPage} of {totalPages}
             </p>
           )}
         </div>
 
-        {loadingProducts ? (
+        {/* Show loading skeletons when loading or no products available during transition */}
+        {(loadingProducts || allProducts.length === 0) ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, index) => (
+            {[...Array(pageSize)].map((_, index) => (
               <div key={index} className="animate-pulse">
                 <div className="bg-gray-300 dark:bg-gray-600 h-64 rounded-lg mb-4"></div>
                 <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded mb-2"></div>
@@ -338,23 +352,26 @@ export default function Listings() {
               </div>
             ))}
           </div>
-        ) : allProducts.length > 0 ? (
+        ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {allProducts.map((product) => (
               <ProductCard
-                key={product.id}
+                key={`${product.id}-${currentPage}`} // Add currentPage to key to force re-render
                 product={{
                   ...product,
-                  name: product.title, // Ensure compatibility with ProductCard component
-                  rating: 4, // Default rating since it's not in the API
-                  description: `${product.title} - ${product.category}`, // Create a description
-                  stock: 10 // Default stock since it's not in the API
+                  name: product.title,
+                  rating: 4,
+                  description: `${product.title} - ${product.category}`,
+                  stock: 10
                 }}
                 onAddToCart={handleAddToCart}
               />
             ))}
           </div>
-        ) : (
+        )}
+
+        {/* Show "No products" message only when not loading and no products */}
+        {!loadingProducts && allProducts.length === 0 && (
           <div className="text-center py-12">
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
               No Products Available
@@ -383,7 +400,6 @@ export default function Listings() {
             </button>
             
             {totalPages <= 7 ? (
-              // Show all pages if total pages are 7 or less
               [...Array(totalPages)].map((_, index) => (
                 <button
                   key={index + 1}
@@ -398,7 +414,6 @@ export default function Listings() {
                 </button>
               ))
             ) : (
-              // Show limited pages with ellipsis for large numbers
               <>
                 <button
                   onClick={() => handlePageChange(1)}
