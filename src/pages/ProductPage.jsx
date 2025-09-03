@@ -381,9 +381,9 @@ const ProductDetails = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
-      <div className="container mx-auto px-6 py-4">
+      <div className="container mx-auto px-6 py-4 pb-20"> {/* Added bottom padding for mobile action buttons */}
         {/* Back Button */}
-            {/* Breadcrumb */}
+        {/* Breadcrumb */}
       <nav className="text-sm mb-4 text-slate-500 dark:text-slate-400 space-x-1">
         <Link to="/" className="hover:underline text-blue-600 dark:text-blue-400">
           Home
@@ -400,418 +400,435 @@ const ProductDetails = () => {
           {product.name}
         </span>
       </nav>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-[calc(100vh-120px)]">
-          {/* Left Side - Product Images */}
-          <div className="relative">
-  <div className="sticky top-4 space-y-4">
-    <div className="flex flex-col md:flex-row gap-4">
-      {/* Thumbnail Images Sidebar with scrollbar */}
-      <div className="order-2 md:order-1 flex md:flex-col gap-3 overflow-x-auto md:overflow-y-auto md:max-h-[500px] scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent hover:scrollbar-thumb-gray-400 dark:hover:scrollbar-thumb-gray-500 pr-2">
-        {product.images.map((image, index) => (
-          <button
-            key={index}
-            onClick={() => setSelectedImageIndex(index)}
-            className={`flex-shrink-0 relative overflow-hidden rounded-xl transition-all duration-200 border-2 ${
-              selectedImageIndex === index 
-                ? 'border-blue-500 dark:border-blue-400 shadow-lg scale-105' 
-                : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 hover:scale-105 opacity-70 hover:opacity-100'
-            }`}
-          >
-            <img
-              src={image}
-              alt={`${product.name} view ${index + 1}`}
-              className="w-16 h-16 md:w-20 md:h-20 object-cover"
-              onError={(e) => {
-                e.target.src = 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=400&fit=crop';
-              }}
-            />
-          </button>
-        ))}
-      </div>
-
-      {/* Main Image Container */}
-      <div className="order-1 md:order-2 flex-1">
-        <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-800 shadow-lg">
-          <div 
-            className="relative w-full h-64 sm:h-80 md:h-96 lg:h-[500px] overflow-hidden cursor-crosshair"
-            onMouseMove={handleMouseMove}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-          >
-            <img
-              src={uploadedImage || product.images[selectedImageIndex]}
-              alt={product.name}
-              className="w-full h-full object-contain"
-              onError={(e) => {
-                e.target.src = 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&h=600&fit=crop';
-              }}
-              
-            />
-            
-            {/* Zoom indicator overlay - shows the area being magnified */}
-            {isZoomed && (
-              <div
-                className="absolute border-2 border-blue-500 bg-blue-500/20 pointer-events-none rounded-lg"
-                style={{
-                  width: '80px',
-                  height: '80px',
-                  left: `${zoomPosition.x}%`,
-                  top: `${zoomPosition.y}%`,
-                  transform: 'translate(-50%, -50%)',
-                }}
-              />
-            )}
-          </div>
-
-          {/* Zoom Panel - Fixed position with corrected zoom calculation */}
-          {isZoomed && (
-            <div className="fixed top-1/2 right-8 transform -translate-y-1/2 w-80 h-80 border-4 border-white dark:border-gray-700 rounded-xl shadow-2xl pointer-events-none z-50 overflow-hidden bg-white dark:bg-slate-800">
-              <div className="relative w-full h-full overflow-hidden">
-                <img
-                  src={uploadedImage || product.images[selectedImageIndex]}
-                  alt={`${product.name} - Zoomed`}
-                  className="absolute w-full h-full object-cover"
-                  style={{
-                    // Scale the image up by 3x instead of 4x
-                    transform: `scale(3)`,
-                    // Position the scaled image so the cursor area is centered
-                    transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
-                  }}
-                />
-              </div>
-              
-              {/* Zoom panel header - updated text */}
-              <div className="absolute top-2 left-2 bg-black/70 text-white px-2 py-1 rounded text-xs font-medium">
-                3x Zoom
-              </div>
-            </div>
-          )}
-
-          {/* Wishlist Button */}
-          <button
-            onClick={handleToggleWishlist}
-            className={`absolute top-4 right-4 p-2 md:p-3 rounded-full backdrop-blur-sm transition-all duration-200 z-20 ${
-              isWishlisted 
-                ? 'bg-red-100 dark:bg-red-900/50 text-red-500 dark:text-red-400 scale-110' 
-                : 'bg-white/80 dark:bg-slate-800/80 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-slate-800 hover:scale-110'
-            }`}
-          >
-            <Heart className={`w-5 h-5 md:w-6 md:h-6 ${isWishlisted ? 'fill-current' : ''}`} />
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-          {/* Right Side - Scrollable Content */}
-          <div className="overflow-y-auto pr-4 space-y-6 hide-scrollbar">
-            {/* Product Info */}
-            <div>
-              <span className="inline-block text-sm bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-full px-3 py-1 mb-3 font-medium">
-                {product.category}
-              </span>
-              <h1 className="text-3xl lg:text-4xl font-bold text-slate-900 dark:text-slate-100 mb-3 leading-tight">
-                {product.name}
-              </h1>
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-lg font-semibold text-slate-700 dark:text-slate-300">by {product.brand}</span>
-              </div>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="flex items-center gap-1">{renderStars(product.rating)}</div>
-                <span className="text-sm text-slate-600 dark:text-slate-400">{product.rating.toFixed(1)}</span>
-                <span className="text-sm text-slate-500 dark:text-slate-500">({product.reviews} reviews)</span>
-              </div>
-            </div>
-
-            {/* Price */}
-            <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-xl p-4">
-              <div className="flex items-center gap-3 mb-2">
-                <span className="text-3xl font-bold text-slate-800 dark:text-slate-200">{product.price}</span>
-                <span className="text-xl text-slate-400 dark:text-slate-500 line-through">{product.originalPrice}</span>
-                <span className="bg-red-500 dark:bg-red-600 text-white px-2 py-1 rounded-full text-sm font-semibold">
-                  {product.discount}
-                </span>
-              </div>
-              <p className="text-sm text-slate-600 dark:text-slate-400">Free delivery on orders above $50</p>
-            </div>
-
-            {/* Share Buttons */}
-            <ShareButtons />
-
-            {/* Stock */}
-            <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-xl">
-              <div className="w-3 h-3 rounded-full bg-green-500 dark:bg-green-400 animate-pulse" />
-              <span className="font-medium text-green-700 dark:text-green-300">
-                In Stock ({product.stock} available)
-              </span>
-            </div>
-
-            {/* Size Selection */}
-            <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-sm">
-              <h3 className="font-semibold text-slate-800 dark:text-slate-200 mb-4">Size</h3>
-              <div className="grid grid-cols-2 gap-3">
-                {sizeOptions.map((size) => (
+      
+      {/* Main Content Grid - Different layout for mobile vs desktop */}
+      <div className="lg:grid lg:grid-cols-2 lg:gap-8 lg:h-[calc(100vh-120px)] space-y-6 lg:space-y-0">
+        {/* Left Side - Product Images */}
+        <div className="relative">
+          <div className="lg:sticky lg:top-4 space-y-4">
+            <div className="flex flex-col md:flex-row gap-4">
+              {/* Thumbnail Images Sidebar with scrollbar */}
+              <div className="order-2 md:order-1 flex md:flex-col gap-3 overflow-x-auto md:overflow-y-auto md:max-h-[500px] scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent hover:scrollbar-thumb-gray-400 dark:hover:scrollbar-thumb-gray-500 pr-2">
+                {product.images.map((image, index) => (
                   <button
-                    key={size.value}
-                    onClick={() => setSelectedSize(size.value)}
-                    className={`p-3 rounded-lg border-2 text-center font-medium transition-all ${
-                      selectedSize === size.value
-                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
-                        : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 text-slate-700 dark:text-slate-300'
+                    key={index}
+                    onClick={() => setSelectedImageIndex(index)}
+                    className={`flex-shrink-0 relative overflow-hidden rounded-xl transition-all duration-200 border-2 ${
+                      selectedImageIndex === index 
+                        ? 'border-blue-500 dark:border-blue-400 shadow-lg scale-105' 
+                        : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 hover:scale-105 opacity-70 hover:opacity-100'
                     }`}
                   >
-                    {size.label}
+                    <img
+                      src={image}
+                      alt={`${product.name} view ${index + 1}`}
+                      className="w-16 h-16 md:w-20 md:h-20 object-cover"
+                      onError={(e) => {
+                        e.target.src = 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=400&fit=crop';
+                      }}
+                    />
                   </button>
                 ))}
               </div>
-            </div>
 
-            {/* Inside Color Selection */}
-            <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-sm">
-              <h3 className="font-semibold text-slate-800 dark:text-slate-200 mb-4">Inside Color</h3>
-              <div className="flex flex-wrap gap-3">
-                {colorOptions.map((color) => (
-                  <button
-                    key={color.value}
-                    onClick={() => setSelectedColor(color.value)}
-                    className={`w-10 h-10 rounded-full border-4 transition-all ${
-                      selectedColor === color.value
-                        ? 'border-blue-500 scale-110 shadow-lg'
-                        : 'border-gray-300 dark:border-gray-500 hover:scale-105'
-                    }`}
-                    style={{ 
-                      backgroundColor: color.color,
-                      borderColor: color.border || color.color
-                    }}
-                    title={color.label}
-                  />
-                ))}
-              </div>
-            </div>
-
-            {/* Style Selection */}
-            <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-sm">
-              <h3 className="font-semibold text-slate-800 dark:text-slate-200 mb-4">Style</h3>
-              <div className="grid grid-cols-2 gap-3">
-                {styleOptions.map((style) => (
-                  <button
-                    key={style.value}
-                    onClick={() => setSelectedStyle(style.value)}
-                    className={`p-3 rounded-lg border-2 text-center font-medium transition-all ${
-                      selectedStyle === style.value
-                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
-                        : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 text-slate-700 dark:text-slate-300'
-                    }`}
+              {/* Main Image Container */}
+              <div className="order-1 md:order-2 flex-1">
+                <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-800 shadow-lg">
+                  <div 
+                    className="relative w-full h-64 sm:h-80 md:h-96 lg:h-[500px] overflow-hidden cursor-crosshair"
+                    onMouseMove={handleMouseMove}
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
                   >
-                    {style.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Delivery Speed */}
-            <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-sm">
-              <h3 className="font-semibold text-slate-800 dark:text-slate-200 mb-4">Delivery Speed</h3>
-              <div className="space-y-2">
-                {deliveryOptions.map((delivery) => (
-                  <button
-                    key={delivery.value}
-                    onClick={() => setSelectedDelivery(delivery.value)}
-                    className={`w-full p-3 rounded-lg border-2 text-left font-medium transition-all ${
-                      selectedDelivery === delivery.value
-                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
-                        : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 text-slate-700 dark:text-slate-300'
-                    }`}
-                  >
-                    {delivery.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-            {/* Quantity Selection with Pricing */}
-            <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-sm">
-              <h3 className="font-semibold text-slate-800 dark:text-slate-200 mb-4">Quantity</h3>
-              <div className="space-y-3">
-                {quantityPricing.map((pricing) => (
-                  <button
-                    key={pricing.qty}
-                    onClick={() => setQuantity(pricing.qty)}
-                    className={`w-full flex items-center justify-between p-4 rounded-lg border-2 transition-all ${
-                      quantity === pricing.qty
-                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                        : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="font-medium text-slate-800 dark:text-slate-200">{pricing.qty}</span>
-                      {pricing.recommended && (
-                        <span className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-2 py-1 rounded-full text-xs font-medium">
-                          Recommended
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-right">
-                      <div className="font-bold text-slate-800 dark:text-slate-200">₹{pricing.price}.00</div>
-                      {pricing.savings > 0 && (
-                        <div className="text-xs text-gray-500">
-                          <span className="line-through">₹{pricing.originalPrice}.00</span>
-                          <span className="text-green-600 dark:text-green-400 ml-1">{pricing.savings}% savings</span>
-                        </div>
-                      )}
-                    </div>
-                  </button>
-                ))}
-              </div>
-              
-              {/* Current Selection Summary */}
-              <div className="mt-4 p-4 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-lg">
-                <div className="text-sm text-slate-600 dark:text-slate-400 mb-1">
-                  {quantity} starting at ₹{currentPricing.price}.00
-                </div>
-                <div className="text-sm text-green-600 dark:text-green-400 font-medium">
-                  Free shipping by 6 August to 110001
-                </div>
-              </div>
-            </div>
-
-            {/* Design Upload Section */}
-            <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-sm">
-              <div className="flex gap-4 mb-4">
-                <button
-                  onClick={() => setActiveTab('browse')}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                    activeTab === 'browse'
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                  }`}
-                >
-                  Browse designs
-                </button>
-                <button
-                  onClick={() => setActiveTab('upload')}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                    activeTab === 'upload'
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                  }`}
-                >
-                  Upload design
-                </button>
-              </div>
-
-              {activeTab === 'browse' && (
-                <div className="text-center py-8">
-                  <div className="text-slate-500 dark:text-slate-400 mb-2">Choose one of our templates</div>
-                  <button className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-4 py-2 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors">
-                    Browse Templates
-                  </button>
-                </div>
-              )}
-
-              {activeTab === 'upload' && (
-                <div>
-                  {!uploadedImage ? (
-                    <div
-                      onClick={() => fileInputRef.current?.click()}
-                      className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 transition-colors"
-                    >
-                      <Upload className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
-                      <div className="text-slate-700 dark:text-slate-300 font-medium mb-2">
-                        Have a design? Upload and edit it
-                      </div>
-                      <div className="text-sm text-slate-500 dark:text-slate-400">
-                        Click to upload or drag and drop your image
-                      </div>
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        className="hidden"
+                    <img
+                      src={uploadedImage || product.images[selectedImageIndex]}
+                      alt={product.name}
+                      className="w-full h-full object-contain"
+                      onError={(e) => {
+                        e.target.src = 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&h=600&fit=crop';
+                      }}
+                      
+                    />
+                    
+                    {/* Zoom indicator overlay - shows the area being magnified */}
+                    {isZoomed && (
+                      <div
+                        className="absolute border-2 border-blue-500 bg-blue-500/20 pointer-events-none rounded-lg"
+                        style={{
+                          width: '80px',
+                          height: '80px',
+                          left: `${zoomPosition.x}%`,
+                          top: `${zoomPosition.y}%`,
+                          transform: 'translate(-50%, -50%)',
+                        }}
                       />
-                    </div>
-                  ) : (
-                    <div className="relative">
-                      <img
-                        src={uploadedImage}
-                        alt="Uploaded design"
-                        className="w-full h-48 object-cover rounded-lg"
-                      />
-                      <button
-                        onClick={removeUploadedImage}
-                        className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition-colors"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                      <div className="mt-3 text-center">
-                        <button
-                          onClick={() => fileInputRef.current?.click()}
-                          className="text-blue-600 dark:text-blue-400 hover:underline"
-                        >
-                          Change Image
-                        </button>
+                    )}
+                  </div>
+
+                  {/* Zoom Panel - Fixed position with corrected zoom calculation */}
+                  {isZoomed && (
+                    <div className="fixed top-1/2 right-8 transform -translate-y-1/2 w-80 h-80 border-4 border-white dark:border-gray-700 rounded-xl shadow-2xl pointer-events-none z-50 overflow-hidden bg-white dark:bg-slate-800 hidden lg:block">
+                      <div className="relative w-full h-full overflow-hidden">
+                        <img
+                          src={uploadedImage || product.images[selectedImageIndex]}
+                          alt={`${product.name} - Zoomed`}
+                          className="absolute w-full h-full object-cover"
+                          style={{
+                            transform: `scale(3)`,
+                            transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
+                          }}
+                        />
+                      </div>
+                      
+                      <div className="absolute top-2 left-2 bg-black/70 text-white px-2 py-1 rounded text-xs font-medium">
+                        3x Zoom
                       </div>
                     </div>
                   )}
-                </div>
-              )}
-            </div>
 
-            {/* Action Buttons */}
-            <div className="flex gap-4 sticky bottom-0 bg-white dark:bg-slate-800 p-4 rounded-xl shadow-lg">
-              <button className="flex items-center justify-center gap-3 flex-1 h-14 bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-700 dark:to-indigo-700 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-indigo-700 dark:hover:from-blue-800 dark:hover:to-indigo-800 transition-all duration-200 hover:scale-[1.02]">
-                <ShoppingCart className="w-5 h-5" />
-                Add to Cart
-              </button>
-              <button className="h-14 px-8 border-2 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-xl font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-400 dark:hover:border-slate-500 transition-all duration-200">
-                Buy Now
-              </button>
-            </div>
-
-            {/* Product Features */}
-            <div className="bg-white dark:bg-slate-800 shadow-sm rounded-xl p-6">
-              <h3 className="font-semibold text-slate-800 dark:text-slate-200 mb-4">Product Features</h3>
-              <ul className="space-y-3">
-                {product.features.map((feature, index) => (
-                  <li key={index} className="flex items-start gap-3">
-                    <div className="w-2 h-2 bg-blue-500 dark:bg-blue-400 rounded-full mt-2 flex-shrink-0" />
-                    <span className="text-slate-600 dark:text-slate-400">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Shipping Info */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl">
-                <Truck className="w-6 h-6 text-green-600 dark:text-green-400" />
-                <div>
-                  <p className="font-semibold text-sm text-slate-800 dark:text-slate-200">Free Shipping</p>
-                  <p className="text-xs text-slate-600 dark:text-slate-400">On orders over ₹50</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-xl">
-                <Shield className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                <div>
-                  <p className="font-semibold text-sm text-slate-800 dark:text-slate-200">100% Satisfaction</p>
-                  <p className="text-xs text-slate-600 dark:text-slate-400">Guaranteed</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl">
-                <RotateCcw className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-                <div>
-                  <p className="font-semibold text-sm text-slate-800 dark:text-slate-200">Easy Returns</p>
-                  <p className="text-xs text-slate-600 dark:text-slate-400">30-day policy</p>
+                  {/* Wishlist Button */}
+                  <button
+                    onClick={handleToggleWishlist}
+                    className={`absolute top-4 right-4 p-2 md:p-3 rounded-full backdrop-blur-sm transition-all duration-200 z-20 ${
+                      isWishlisted 
+                        ? 'bg-red-100 dark:bg-red-900/50 text-red-500 dark:text-red-400 scale-110' 
+                        : 'bg-white/80 dark:bg-slate-800/80 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-slate-800 hover:scale-110'
+                    }`}
+                  >
+                    <Heart className={`w-5 h-5 md:w-6 md:h-6 ${isWishlisted ? 'fill-current' : ''}`} />
+                  </button>
                 </div>
               </div>
             </div>
           </div>
         </div>
-         {/* <SimilarProducts name={product.category}/> */}
+
+        {/* Right Side - Product Details - No overflow on mobile, scrollable on desktop */}
+        <div className="lg:overflow-y-auto lg:pr-4 space-y-6 lg:hide-scrollbar">
+          {/* Product Info */}
+          <div>
+            <span className="inline-block text-sm bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-full px-3 py-1 mb-3 font-medium">
+              {product.category}
+            </span>
+            <h1 className="text-3xl lg:text-4xl font-bold text-slate-900 dark:text-slate-100 mb-3 leading-tight">
+              {product.name}
+            </h1>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-lg font-semibold text-slate-700 dark:text-slate-300">by {product.brand}</span>
+            </div>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex items-center gap-1">{renderStars(product.rating)}</div>
+              <span className="text-sm text-slate-600 dark:text-slate-400">{product.rating.toFixed(1)}</span>
+              <span className="text-sm text-slate-500 dark:text-slate-500">({product.reviews} reviews)</span>
+            </div>
+          </div>
+
+          {/* Price */}
+          <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-xl p-4">
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-3xl font-bold text-slate-800 dark:text-slate-200">{product.price}</span>
+              <span className="text-xl text-slate-400 dark:text-slate-500 line-through">{product.originalPrice}</span>
+              <span className="bg-red-500 dark:bg-red-600 text-white px-2 py-1 rounded-full text-sm font-semibold">
+                {product.discount}
+              </span>
+            </div>
+            <p className="text-sm text-slate-600 dark:text-slate-400">Free delivery on orders above $50</p>
+          </div>
+
+          {/* Share Buttons */}
+          <ShareButtons />
+
+          {/* Stock */}
+          <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-xl">
+            <div className="w-3 h-3 rounded-full bg-green-500 dark:bg-green-400 animate-pulse" />
+            <span className="font-medium text-green-700 dark:text-green-300">
+              In Stock ({product.stock} available)
+            </span>
+          </div>
+
+          {/* Size Selection */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-sm">
+            <h3 className="font-semibold text-slate-800 dark:text-slate-200 mb-4">Size</h3>
+            <div className="grid grid-cols-2 gap-3">
+              {sizeOptions.map((size) => (
+                <button
+                  key={size.value}
+                  onClick={() => setSelectedSize(size.value)}
+                  className={`p-3 rounded-lg border-2 text-center font-medium transition-all ${
+                    selectedSize === size.value
+                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+                      : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 text-slate-700 dark:text-slate-300'
+                  }`}
+                >
+                  {size.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Inside Color Selection */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-sm">
+            <h3 className="font-semibold text-slate-800 dark:text-slate-200 mb-4">Inside Color</h3>
+            <div className="flex flex-wrap gap-3">
+              {colorOptions.map((color) => (
+                <button
+                  key={color.value}
+                  onClick={() => setSelectedColor(color.value)}
+                  className={`w-10 h-10 rounded-full border-4 transition-all ${
+                    selectedColor === color.value
+                      ? 'border-blue-500 scale-110 shadow-lg'
+                      : 'border-gray-300 dark:border-gray-500 hover:scale-105'
+                  }`}
+                  style={{ 
+                    backgroundColor: color.color,
+                    borderColor: color.border || color.color
+                  }}
+                  title={color.label}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Style Selection */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-sm">
+            <h3 className="font-semibold text-slate-800 dark:text-slate-200 mb-4">Style</h3>
+            <div className="grid grid-cols-2 gap-3">
+              {styleOptions.map((style) => (
+                <button
+                  key={style.value}
+                  onClick={() => setSelectedStyle(style.value)}
+                  className={`p-3 rounded-lg border-2 text-center font-medium transition-all ${
+                    selectedStyle === style.value
+                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+                      : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 text-slate-700 dark:text-slate-300'
+                  }`}
+                >
+                  {style.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Delivery Speed */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-sm">
+            <h3 className="font-semibold text-slate-800 dark:text-slate-200 mb-4">Delivery Speed</h3>
+            <div className="space-y-2">
+              {deliveryOptions.map((delivery) => (
+                <button
+                  key={delivery.value}
+                  onClick={() => setSelectedDelivery(delivery.value)}
+                  className={`w-full p-3 rounded-lg border-2 text-left font-medium transition-all ${
+                    selectedDelivery === delivery.value
+                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+                      : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 text-slate-700 dark:text-slate-300'
+                  }`}
+                >
+                  {delivery.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Quantity Selection with Pricing */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-sm">
+            <h3 className="font-semibold text-slate-800 dark:text-slate-200 mb-4">Quantity</h3>
+            <div className="space-y-3">
+              {quantityPricing.map((pricing) => (
+                <button
+                  key={pricing.qty}
+                  onClick={() => setQuantity(pricing.qty)}
+                  className={`w-full flex items-center justify-between p-4 rounded-lg border-2 transition-all ${
+                    quantity === pricing.qty
+                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                      : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="font-medium text-slate-800 dark:text-slate-200">{pricing.qty}</span>
+                    {pricing.recommended && (
+                      <span className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-2 py-1 rounded-full text-xs font-medium">
+                        Recommended
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <div className="font-bold text-slate-800 dark:text-slate-200">₹{pricing.price}.00</div>
+                    {pricing.savings > 0 && (
+                      <div className="text-xs text-gray-500">
+                        <span className="line-through">₹{pricing.originalPrice}.00</span>
+                        <span className="text-green-600 dark:text-green-400 ml-1">{pricing.savings}% savings</span>
+                      </div>
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
+            
+            {/* Current Selection Summary */}
+            <div className="mt-4 p-4 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-lg">
+              <div className="text-sm text-slate-600 dark:text-slate-400 mb-1">
+                {quantity} starting at ₹{currentPricing.price}.00
+              </div>
+              <div className="text-sm text-green-600 dark:text-green-400 font-medium">
+                Free shipping by 6 August to 110001
+              </div>
+            </div>
+          </div>
+
+          {/* Design Upload Section */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-sm">
+            <div className="flex gap-4 mb-4">
+              <button
+                onClick={() => setActiveTab('browse')}
+                className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                  activeTab === 'browse'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
+              >
+                Browse designs
+              </button>
+              <button
+                onClick={() => setActiveTab('upload')}
+                className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                  activeTab === 'upload'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
+              >
+                Upload design
+              </button>
+            </div>
+
+            {activeTab === 'browse' && (
+              <div className="text-center py-8">
+                <div className="text-slate-500 dark:text-slate-400 mb-2">Choose one of our templates</div>
+                <button className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-4 py-2 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors">
+                  Browse Templates
+                </button>
+              </div>
+            )}
+
+            {activeTab === 'upload' && (
+              <div>
+                {!uploadedImage ? (
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 transition-colors"
+                  >
+                    <Upload className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+                    <div className="text-slate-700 dark:text-slate-300 font-medium mb-2">
+                      Have a design? Upload and edit it
+                    </div>
+                    <div className="text-sm text-slate-500 dark:text-slate-400">
+                      Click to upload or drag and drop your image
+                    </div>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <img
+                      src={uploadedImage}
+                      alt="Uploaded design"
+                      className="w-full h-48 object-cover rounded-lg"
+                    />
+                    <button
+                      onClick={removeUploadedImage}
+                      className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                    <div className="mt-3 text-center">
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        className="text-blue-600 dark:text-blue-400 hover:underline"
+                      >
+                        Change Image
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Product Features */}
+          <div className="bg-white dark:bg-slate-800 shadow-sm rounded-xl p-6">
+            <h3 className="font-semibold text-slate-800 dark:text-slate-200 mb-4">Product Features</h3>
+            <ul className="space-y-3">
+              {product.features.map((feature, index) => (
+                <li key={index} className="flex items-start gap-3">
+                  <div className="w-2 h-2 bg-blue-500 dark:bg-blue-400 rounded-full mt-2 flex-shrink-0" />
+                  <span className="text-slate-600 dark:text-slate-400">{feature}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Shipping Info */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl">
+              <Truck className="w-6 h-6 text-green-600 dark:text-green-400" />
+              <div>
+                <p className="font-semibold text-sm text-slate-800 dark:text-slate-200">Free Shipping</p>
+                <p className="text-xs text-slate-600 dark:text-slate-400">On orders over ₹50</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-xl">
+              <Shield className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              <div>
+                <p className="font-semibold text-sm text-slate-800 dark:text-slate-200">100% Satisfaction</p>
+                <p className="text-xs text-slate-600 dark:text-slate-400">Guaranteed</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl">
+              <RotateCcw className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+              <div>
+                <p className="font-semibold text-sm text-slate-800 dark:text-slate-200">Easy Returns</p>
+                <p className="text-xs text-slate-600 dark:text-slate-400">30-day policy</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
+
+      {/* Fixed Action Buttons for Mobile */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-800 p-4 shadow-lg z-50 lg:hidden">
+        <div className="flex gap-4">
+          <button className="flex items-center justify-center gap-3 flex-1 h-14 bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-700 dark:to-indigo-700 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-indigo-700 dark:hover:from-blue-800 dark:hover:to-indigo-800 transition-all duration-200">
+            <ShoppingCart className="w-5 h-5" />
+            Add to Cart
+          </button>
+          <button className="h-14 px-6 border-2 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-xl font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-400 dark:hover:border-slate-500 transition-all duration-200">
+            Buy Now
+          </button>
+        </div>
+      </div>
+
+      {/* Desktop Action Buttons */}
+      <div className="hidden lg:block lg:sticky lg:bottom-0 bg-white dark:bg-slate-800 p-4 rounded-xl shadow-lg mt-6">
+        <div className="flex gap-4">
+          <button className="flex items-center justify-center gap-3 flex-1 h-14 bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-700 dark:to-indigo-700 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-indigo-700 dark:hover:from-blue-800 dark:hover:to-indigo-800 transition-all duration-200 hover:scale-[1.02]">
+            <ShoppingCart className="w-5 h-5" />
+            Add to Cart
+          </button>
+          <button className="h-14 px-8 border-2 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-xl font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-400 dark:hover:border-slate-500 transition-all duration-200">
+            Buy Now
+          </button>
+        </div>
+      </div>
+
+      {/* <SimilarProducts name={product.category}/> */}
     </div>
-  );
+  </div>
+  ); // Added the missing closing parenthesis
+  
 };
 
 export default ProductDetails;
