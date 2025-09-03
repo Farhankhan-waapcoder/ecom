@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import toast from 'react-hot-toast';
 import ProductSlider from "../components/ProductSlider.jsx";
@@ -12,6 +12,9 @@ export default function Listings({ isLoggedIn, setIsLoggedIn, currentUser: propC
   const { pageNumber } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  
+  // Add ref for Featured Products section
+  const featuredProductsRef = useRef(null);
   
   const [cartItems, setCartItems] = useState([]);
   const [currentUser, setCurrentUser] = useState(propCurrentUser);
@@ -39,12 +42,36 @@ export default function Listings({ isLoggedIn, setIsLoggedIn, currentUser: propC
   useEffect(() => {
     const urlPage = parseInt(pageNumber) || 1;
     if (urlPage !== currentPage) {
-      // Clear products immediately when page changes
+      // Force clear products and show loading immediately
       setAllProducts([]);
       setLoadingProducts(true);
       setCurrentPage(urlPage);
     }
   }, [pageNumber, currentPage]);
+
+  // Auto-scroll immediately when page changes - no waiting for products to load
+  useEffect(() => {
+    // Add a small delay to ensure the page change is registered
+    const scrollTimer = setTimeout(() => {
+      if (featuredProductsRef.current) {
+        if (currentPage === 1) {
+          // For page 1, scroll to top
+          window.scrollTo({ 
+            top: 0, 
+            behavior: 'smooth' 
+          });
+        } else {
+          // For page 2+, scroll to Featured Products immediately
+          featuredProductsRef.current.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      }
+    }, 50); // Very small delay just to ensure DOM is ready
+
+    return () => clearTimeout(scrollTimer);
+  }, [currentPage]); // Only triggers when currentPage changes
 
   // Initialize user and cart on component mount
   useEffect(() => {
@@ -158,8 +185,12 @@ export default function Listings({ isLoggedIn, setIsLoggedIn, currentUser: propC
       try {
         setLoadingProducts(true);
         setError(null);
-        // Clear previous products immediately
+        
+        // Force clear products immediately with a small delay to ensure UI updates
         setAllProducts([]);
+        
+        // Small delay to ensure the UI shows loading state
+        await new Promise(resolve => setTimeout(resolve, 50));
         
         // Get total count of products
         const countResult = await adminApi.get('/products?pageNumber=1&pageSize=1000');
@@ -175,8 +206,9 @@ export default function Listings({ isLoggedIn, setIsLoggedIn, currentUser: propC
         const endIndex = startIndex + pageSize;
         const paginatedData = countResult.data.slice(startIndex, endIndex);
         
-        const formattedProducts = paginatedData.map(item => ({
+        const formattedProducts = paginatedData.map((item, index) => ({
           id: item.productID,
+          uniqueId: `${item.productID}_page_${currentPage}_index_${index}`, // Create unique identifier
           title: item.productName,
           image: item.productImage 
             ? `https://adminecommerce.waapcoders.in/${item.productImage}`
@@ -189,6 +221,8 @@ export default function Listings({ isLoggedIn, setIsLoggedIn, currentUser: propC
             : '/placeholder-category.jpg'
         }));
         
+        // Add another small delay before setting products to ensure clean transition
+        await new Promise(resolve => setTimeout(resolve, 100));
         setAllProducts(formattedProducts);
       } catch (err) {
         console.error("Failed to fetch products:", err);
@@ -229,7 +263,7 @@ export default function Listings({ isLoggedIn, setIsLoggedIn, currentUser: propC
   // Handle page change with URL navigation
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages && newPage !== currentPage) {
-      // Clear products immediately before navigation
+      // Force immediate clear of products
       setAllProducts([]);
       setLoadingProducts(true);
       
@@ -239,9 +273,6 @@ export default function Listings({ isLoggedIn, setIsLoggedIn, currentUser: propC
       } else {
         navigate(`/page/${newPage}`, { replace: true });
       }
-      
-      // Scroll to top when page changes
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -325,8 +356,8 @@ export default function Listings({ isLoggedIn, setIsLoggedIn, currentUser: propC
           </div>
         )}
 
-        {/* All Products Grid - Updates with pagination */}
-        <div className="mb-8">
+        {/* All Products Grid - Updates with pagination - ADD REF HERE */}
+        <div className="mb-8" ref={featuredProductsRef}>
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 transition-colors duration-300">
             Featured Products
           </h2>
@@ -340,11 +371,11 @@ export default function Listings({ isLoggedIn, setIsLoggedIn, currentUser: propC
           )}
         </div>
 
-        {/* Show loading skeletons when loading or no products available during transition */}
-        {(loadingProducts || allProducts.length === 0) ? (
+        {/* Products Grid with proper key management */}
+        {loadingProducts ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(pageSize)].map((_, index) => (
-              <div key={index} className="animate-pulse">
+              <div key={`skeleton-${currentPage}-${index}`} className="animate-pulse">
                 <div className="bg-gray-300 dark:bg-gray-600 h-64 rounded-lg mb-4"></div>
                 <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded mb-2"></div>
                 <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-3/4 mb-2"></div>
@@ -352,11 +383,11 @@ export default function Listings({ isLoggedIn, setIsLoggedIn, currentUser: propC
               </div>
             ))}
           </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {allProducts.map((product) => (
+        ) : allProducts.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" key={`products-page-${currentPage}`}>
+            {allProducts.map((product, index) => (
               <ProductCard
-                key={`${product.id}-${currentPage}`} // Add currentPage to key to force re-render
+                key={product.uniqueId}
                 product={{
                   ...product,
                   name: product.title,
@@ -368,10 +399,7 @@ export default function Listings({ isLoggedIn, setIsLoggedIn, currentUser: propC
               />
             ))}
           </div>
-        )}
-
-        {/* Show "No products" message only when not loading and no products */}
-        {!loadingProducts && allProducts.length === 0 && (
+        ) : (
           <div className="text-center py-12">
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
               No Products Available
