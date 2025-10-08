@@ -91,7 +91,7 @@ const CartDropdown = ({ isOpen, onClose }) => {
     <div className="fixed inset-0 z-40" onClick={onClose}></div>
 
     {/* Cart Dropdown */}
-    <div className="absolute top-full right-0 mt-2 w-96 max-w-[90vw] bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 z-50 max-h-[80vh] overflow-hidden text-gray-800 dark:text-gray-100">
+    <div className="fixed sm:absolute top-[4.5rem] sm:top-full right-2 sm:right-0 mt-2 w-[calc(100vw-1rem)] sm:w-96 max-w-md bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 z-50 max-h-[80vh] overflow-hidden text-gray-800 dark:text-gray-100">
       {loading ? (
         <div className="p-6 text-center">
           <div className="animate-spin h-8 w-8 border-b-2 border-[#007580] rounded-full mx-auto mb-2" />
