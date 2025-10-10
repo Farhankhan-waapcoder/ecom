@@ -163,8 +163,24 @@ export default function Category() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
 
       {/* Category Header Section */}
-      <div className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-40 py-4">
-        <div className="max-w-auto mx-auto px-6">
+      <div className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-40">
+        {/* Breadcrumb Section */}
+        <div className="border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+          <div className="max-w-auto mx-auto px-6 py-2">
+            <nav className="flex items-center space-x-1 text-sm">
+              <Link to="/" className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline transition-colors duration-200">
+                Home
+              </Link>
+              <span className="text-gray-400 dark:text-gray-500 mx-2">›</span>
+              <span className="text-gray-700 dark:text-gray-200 font-medium capitalize">
+                {categoryData?.categoryName || name.replace(/-/g, ' ')}
+              </span>
+            </nav>
+          </div>
+        </div>
+        
+        {/* Header Content */}
+        <div className="max-w-auto mx-auto px-6 py-2">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white capitalize">
@@ -195,6 +211,7 @@ export default function Category() {
                 <option value="name">Name: A to Z</option>
               </select>
 
+
               <button onClick={() => setIsFilterOpen(!isFilterOpen)}
                 className="lg:hidden bg-purple-600 text-white p-2 rounded-lg hover:bg-purple-700">
                 <Filter className="w-5 h-5" />
@@ -203,16 +220,7 @@ export default function Category() {
           </div>
         </div>
       </div>
-       {/* Breadcrumb Section */}
-        <nav className="text-sm mb-4 text-slate-500 dark:text-slate-400 space-x-1 px-6 py-4">
-          <Link to="/" className="hover:underline text-blue-600 dark:text-blue-400">
-            Home
-          </Link>
-          <span>&gt;</span>
-          <span className="text-slate-700 dark:text-slate-200">
-            {categoryData?.categoryName || name.replace(/-/g, ' ')}
-          </span>
-        </nav>
+      
       <div className="max-w-auto mx-auto px-6 py-3">
         <div className="flex gap-8">
           {/* Desktop Sidebar */}

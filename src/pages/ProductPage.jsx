@@ -15,6 +15,9 @@ const ProductDetails = () => {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 });
   const [isZoomed, setIsZoomed] = useState(false);
+  const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
+  const [lastCursorPosition, setLastCursorPosition] = useState({ x: 0, y: 0 });
+  const zoomFactor = 2.5;
   
   // New customization states
   const [selectedSize, setSelectedSize] = useState('190 ml');
@@ -24,6 +27,7 @@ const ProductDetails = () => {
   const [uploadedImage, setUploadedImage] = useState(null);
   const [activeTab, setActiveTab] = useState('browse');
   const fileInputRef = useRef(null);
+  const imageContainerRef = useRef(null);
   
   // API states
   const [product, setProduct] = useState(null);
@@ -232,6 +236,14 @@ const ProductDetails = () => {
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
     
+    // Track cursor position for popup placement
+    const cursorX = e.clientX;
+    const cursorY = e.clientY;
+    
+    // Store previous cursor position to detect movement direction
+    setLastCursorPosition(cursorPosition);
+    setCursorPosition({ x: cursorX, y: cursorY });
+    
     // Ensure the zoom position stays within bounds
     const clampedX = Math.max(0, Math.min(100, x));
     const clampedY = Math.max(0, Math.min(100, y));
@@ -248,25 +260,51 @@ const ProductDetails = () => {
   };
 
   const getZoomPopupPosition = () => {
-    const popupSize = 256;
-    const margin = 16;
-    
-    let position = {
-      top: margin,
-      left: margin,
-      right: 'auto',
-      bottom: 'auto'
+    // Fixed-size popup centered vertically to the image container and positioned to the right
+    const popupSize = 300;
+    const margin = 20;
+    const viewportWidth = window.innerWidth;
+
+    // Default position if ref is not ready
+    const defaultPos = {
+      position: 'fixed',
+      width: `${popupSize}px`,
+      height: `${popupSize}px`,
+      right: `${margin}px`,
+      top: `${margin * 2}px`,
+      zIndex: 60
     };
 
-    if (zoomPosition.x < 50) {
-      position.right = margin;
-      position.left = 'auto';
+    const container = imageContainerRef.current;
+    if (!container) return defaultPos;
+
+    const rect = container.getBoundingClientRect();
+
+    // Center popup vertically on the image container
+    let top = rect.top + rect.height / 2 - popupSize / 2;
+    // Clamp top within viewport
+    top = Math.max(margin, Math.min(window.innerHeight - popupSize - margin, top));
+
+    // Try to place to the right of the image container
+    let left = rect.right + margin;
+    let right = 'auto';
+
+    // If not enough space on the right, place it to the left
+    if (left + popupSize > viewportWidth - margin) {
+      right = viewportWidth - (rect.left - margin);
+      left = 'auto';
     }
-    
-    if (zoomPosition.y < 30) {
-      position.bottom = margin;
-      position.top = 'auto';
-    }
+
+    const position = {
+      position: 'fixed',
+      width: `${popupSize}px`,
+      height: `${popupSize}px`,
+      top: `${top}px`,
+      zIndex: 60
+    };
+
+    if (left !== 'auto') position.left = `${left}px`;
+    if (right !== 'auto') position.right = `${right}px`;
 
     return position;
   };
@@ -408,7 +446,7 @@ const ProductDetails = () => {
           <div className="lg:sticky lg:top-4 space-y-4">
             <div className="flex flex-col md:flex-row gap-4">
               {/* Thumbnail Images Sidebar with scrollbar */}
-              <div className="order-2 md:order-1 flex md:flex-col gap-3 overflow-x-auto md:overflow-y-auto md:max-h-[500px] scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent hover:scrollbar-thumb-gray-400 dark:hover:scrollbar-thumb-gray-500 pr-2">
+              <div className="order-2 md:order-1 flex md:flex-col gap-3 overflow-x-auto md:overflow-y-auto md:max-h-[500px] pr-2 scrollbar-custom">
                 {product.images.map((image, index) => (
                   <button
                     key={index}
@@ -435,6 +473,7 @@ const ProductDetails = () => {
               <div className="order-1 md:order-2 flex-1">
                 <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-800 shadow-lg">
                   <div 
+                    ref={imageContainerRef}
                     className="relative w-full h-64 sm:h-80 md:h-96 lg:h-[500px] overflow-hidden cursor-crosshair"
                     onMouseMove={handleMouseMove}
                     onMouseEnter={handleMouseEnter}
@@ -465,23 +504,32 @@ const ProductDetails = () => {
                     )}
                   </div>
 
-                  {/* Zoom Panel - Fixed position with corrected zoom calculation */}
+                  {/* Dynamic Zoom Panel - Positioned opposite to cursor movement */}
                   {isZoomed && (
-                    <div className="fixed top-1/2 right-8 transform -translate-y-1/2 w-80 h-80 border-4 border-white dark:border-gray-700 rounded-xl shadow-2xl pointer-events-none z-50 overflow-hidden bg-white dark:bg-slate-800 hidden lg:block">
-                      <div className="relative w-full h-full overflow-hidden">
-                        <img
-                          src={uploadedImage || product.images[selectedImageIndex]}
-                          alt={`${product.name} - Zoomed`}
-                          className="absolute w-full h-full object-cover"
+                    <div 
+                      className="pointer-events-none border-4 border-white dark:border-gray-700 rounded-xl shadow-2xl overflow-hidden bg-white dark:bg-slate-800 hidden lg:block transition-all duration-200"
+                      style={getZoomPopupPosition()}
+                    >
+                      <div className="w-full h-full">
+                        <div
+                          aria-hidden
+                          className="w-full h-full"
                           style={{
-                            transform: `scale(3)`,
-                            transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
+                            backgroundImage: `url(${uploadedImage || product.images[selectedImageIndex]})`,
+                            backgroundSize: `${zoomFactor * 100}%`,
+                            backgroundPosition: `${zoomPosition.x}% ${zoomPosition.y}%`,
+                            backgroundRepeat: 'no-repeat',
                           }}
                         />
                       </div>
                       
-                      <div className="absolute top-2 left-2 bg-black/70 text-white px-2 py-1 rounded text-xs font-medium">
-                        3x Zoom
+                      <div className="absolute top-2 left-2 bg-black/80 text-white px-3 py-1 rounded-md text-xs font-medium backdrop-blur-sm">
+                        2.5x Zoom
+                      </div>
+                      
+                      {/* Direction indicator */}
+                      <div className="absolute bottom-2 right-2 bg-blue-500/80 text-white px-2 py-1 rounded text-xs font-medium">
+                        📍 Smart Position
                       </div>
                     </div>
                   )}
@@ -504,7 +552,7 @@ const ProductDetails = () => {
         </div>
 
         {/* Right Side - Product Details - No overflow on mobile, scrollable on desktop */}
-        <div className="lg:overflow-y-auto lg:pr-4 space-y-6 lg:hide-scrollbar">
+  <div className="lg:overflow-y-auto lg:pr-4 space-y-6 scrollbar-custom lg:scrollbar-custom">
           {/* Product Info */}
           <div>
             <span className="inline-block text-sm bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-full px-3 py-1 mb-3 font-medium">

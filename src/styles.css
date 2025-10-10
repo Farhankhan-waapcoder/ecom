@@ -79,3 +79,38 @@
 .modal-pop {
   animation: pop 0.3s ease-out forwards;
 }
+
+/* Custom scrollbar for modern UI */
+.scrollbar-custom {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: rgba(100,116,139,0.6) rgba(0,0,0,0.05); /* thumb track */
+}
+
+.scrollbar-custom::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 9999px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(79,70,229,0.9), rgba(99,102,241,0.9));
+  border-radius: 9999px;
+  border: 2px solid rgba(255,255,255,0.0);
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb:hover {
+  filter: brightness(0.9) saturate(1.1);
+}
+
+/* Slightly different for dark mode when .dark is applied */
+.dark .scrollbar-custom::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(16,185,129,0.9), rgba(20,184,166,0.9));
+}
+
+.dark .scrollbar-custom {
+  scrollbar-color: rgba(16,185,129,0.6) rgba(255,255,255,0.03);
+}

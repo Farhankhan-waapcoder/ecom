@@ -4,12 +4,14 @@ export default function Card({ product, handleAddToCart }) {
       key={product.id}
       className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group cursor-pointer"
     >
-      <div className="aspect-square bg-gray-100 relative overflow-hidden">
+      <div className="aspect-square bg-gray-100 relative overflow-hidden flex items-center justify-center p-2">
         <img
           src={product.image}
           alt={product.name}
           loading="lazy"
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          className="max-w-full max-h-full object-contain select-none"
+          onError={(e) => { e.currentTarget.src = '/placeholder-image.jpg'; }}
+          draggable="false"
         />
       </div>
       <div className="p-6">
