@@ -163,10 +163,10 @@ export default function Category() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
 
       {/* Category Header Section */}
-      <div className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-40">
+      <div className="bg-white dark:bg-gray-800 shadow-sm sticky top-16 lg:top-20 z-40">
         {/* Breadcrumb Section */}
         <div className="border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-          <div className="max-w-auto mx-auto px-6 py-2">
+          <div className="container mx-auto px-6 py-2">
             <nav className="flex items-center space-x-1 text-sm">
               <Link to="/" className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline transition-colors duration-200">
                 Home
@@ -180,7 +180,7 @@ export default function Category() {
         </div>
         
         {/* Header Content */}
-        <div className="max-w-auto mx-auto px-6 py-2">
+  <div className="container mx-auto px-6 py-2">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white capitalize">
@@ -221,7 +221,7 @@ export default function Category() {
         </div>
       </div>
       
-      <div className="max-w-auto mx-auto px-6 py-3">
+  <div className="container mx-auto px-6 py-3">
         <div className="flex gap-8">
           {/* Desktop Sidebar */}
           <div className="hidden lg:block w-80">
