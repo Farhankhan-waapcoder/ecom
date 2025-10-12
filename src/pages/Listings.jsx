@@ -38,6 +38,26 @@ export default function Listings({ isLoggedIn, setIsLoggedIn, currentUser: propC
   const [totalProducts, setTotalProducts] = useState(0);
   const [pageSize] = useState(12);
 
+  // Random placeholder images for products
+  const placeholderImages = [
+    'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&h=500&fit=crop',
+    'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&h=500&fit=crop',
+    'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=500&h=500&fit=crop',
+    'https://images.unsplash.com/photo-1560343090-f0409e92791a?w=500&h=500&fit=crop',
+    'https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=500&h=500&fit=crop',
+    'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500&h=500&fit=crop',
+    'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=500&h=500&fit=crop',
+    'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=500&h=500&fit=crop',
+    'https://images.unsplash.com/photo-1583394838336-acd977736f90?w=500&h=500&fit=crop',
+    'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=500&h=500&fit=crop'
+  ];
+
+  // Function to get a random placeholder image
+  const getRandomPlaceholder = (productId) => {
+    const index = productId % placeholderImages.length;
+    return placeholderImages[index];
+  };
+
   // Initialize current page from URL
   useEffect(() => {
     const urlPage = parseInt(pageNumber) || 1;
@@ -212,7 +232,7 @@ export default function Listings({ isLoggedIn, setIsLoggedIn, currentUser: propC
           title: item.productName,
           image: item.productImage 
             ? `https://adminecommerce.waapcoders.in/${item.productImage}`
-            : '/placeholder-image.jpg',
+            : getRandomPlaceholder(item.productID),
           price: parseFloat(item.price),
           category: item.categoryName,
           brand: item.brandName || 'No Brand',

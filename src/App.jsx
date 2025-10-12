@@ -49,7 +49,6 @@ export default function App() {
     <ThemeProvider>
       <Router>
         <ScrollToTop />
-        <Chatbot/>
         <Toaster position="top-right" />
         <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
         
