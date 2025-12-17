@@ -66,6 +66,29 @@ export const productAPI = {
     }
   },
 
+  // Get products with pagination from new API
+  getProductsPaginated: async (page = 1, pageSize = 12, sort = 'newest') => {
+    try {
+      const response = await adminApi.get(`/v1/Products?page=${page}&pageSize=${pageSize}&sort=${sort}`);
+      return {
+        success: response.data.success,
+        data: response.data.data.data,
+        pagination: {
+          page: response.data.data.page,
+          pageSize: response.data.data.pageSize,
+          totalPages: response.data.data.totalPages
+        },
+        message: response.data.message
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data || error.message,
+        message: 'Failed to fetch paginated products'
+      };
+    }
+  },
+
   // Get products with limit
   getProductsWithLimit: async (limit = 5) => {
     try {
@@ -119,6 +142,42 @@ export const productAPI = {
       };
     }
   },
+
+  // Get product details by ID from new API
+  getProductDetails: async (id) => {
+    try {
+      const response = await adminApi.get(`/v1/Products/${id}`);
+      return {
+        success: response.data.success,
+        data: response.data.data,
+        message: response.data.message
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data || error.message,
+        message: 'Failed to fetch product details'
+      };
+    }
+  },
+
+  // Get products by category ID
+  getProductsByCategory: async (categoryId) => {
+    try {
+      const response = await adminApi.get(`/v1/Products/category/${categoryId}`);
+      return {
+        success: true,
+        data: response.data,
+        message: 'Products fetched successfully'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data || error.message,
+        message: 'Failed to fetch products by category'
+      };
+    }
+  },
 };
 
 // CATEGORIES API CALLS
@@ -138,6 +197,60 @@ export const categoryAPI = {
         success: false,
         error: error.response?.data || error.message,
         message: 'Failed to fetch categories'
+      };
+    }
+  },
+
+  // Get categories from new API
+  getCategoriesFromAPI: async () => {
+    try {
+      const response = await adminApi.get('/v1/Categories');
+      return {
+        success: true,
+        data: response.data,
+        message: 'Categories fetched successfully'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data || error.message,
+        message: 'Failed to fetch categories'
+      };
+    }
+  },
+
+  // Get subcategories by category ID
+  getSubCategories: async (categoryId) => {
+    try {
+      const response = await adminApi.get(`/v1/Categories/${categoryId}/subcategories`);
+      return {
+        success: true,
+        data: response.data,
+        message: 'Subcategories fetched successfully'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data || error.message,
+        message: 'Failed to fetch subcategories'
+      };
+    }
+  },
+
+  // Get category tree with hierarchy
+  getCategoryTree: async (activeOnly = true) => {
+    try {
+      const response = await adminApi.get(`/v1/Categories/tree?activeOnly=${activeOnly}`);
+      return {
+        success: true,
+        data: response.data,
+        message: 'Category tree fetched successfully'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data || error.message,
+        message: 'Failed to fetch category tree'
       };
     }
   },

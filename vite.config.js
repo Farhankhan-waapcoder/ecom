@@ -4,8 +4,8 @@ import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  // Use the base domain without /api since we keep the path
-  const target = 'https://adminecommerce.waapcoders.in';
+  // Use the new API base domain
+  const target = 'https://shamweelcartify.waapcoders.in';
   
   return {
     plugins: [

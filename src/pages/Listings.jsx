@@ -5,7 +5,7 @@ import ProductSlider from "../components/ProductSlider.jsx";
 import CategorySlider from "../components/CategorySlider.jsx";
 import ProductCard from "../components/ProductCard.jsx";
 import ProductSliderLoader from "../components/skeleton/ProductSliderLoader.jsx";
-import { productAPI } from "../services/Api.js";
+import { productAPI, categoryAPI } from "../services/Api.js";
 import { adminApi } from '../services/Api';
 
 export default function Listings({ isLoggedIn, setIsLoggedIn, currentUser: propCurrentUser }) {
@@ -170,27 +170,35 @@ export default function Listings({ isLoggedIn, setIsLoggedIn, currentUser: propC
     const fetchCategories = async () => {
       try {
         setLoadingCategories(true);
-        const result = await adminApi.get('/products?pageNumber=1&pageSize=1000');
+        const result = await categoryAPI.getCategoriesFromAPI();
         
-        if (result.data) {
-          const categoryMap = new Map();
-          result.data.forEach(item => {
-            if (item.categoryName && item.categoryID) {
-              categoryMap.set(item.categoryID, {
-                id: item.categoryID,
-                name: item.categoryName,
-                image: item.categoryImage 
-                  ? `https://adminecommerce.waapcoders.in${item.categoryImage}`
-                  : '/placeholder-category.jpg'
-              });
-            }
-          });
+        if (result.success && result.data) {
+          // Filter only active categories and map to required format
+          const formattedCategories = result.data
+            .filter(category => category.isActive)
+            .map(category => ({
+              id: category.id,
+              name: category.name,
+              slug: category.slug,
+              description: category.description,
+              image: category.imageUrl || category.iconUrl || '/placeholder-category.jpg',
+              iconUrl: category.iconUrl,
+              bannerImageUrl: category.bannerImageUrl,
+              level: category.level,
+              parentCategoryId: category.parentCategoryId,
+              isFeatured: category.isFeatured,
+              showOnHomepage: category.showOnHomepage,
+              productCount: category.productCount,
+              displayOrder: category.displayOrder
+            }));
           
-          const uniqueCategories = Array.from(categoryMap.values());
-          setCategories(uniqueCategories);
+          setCategories(formattedCategories);
+        } else {
+          throw new Error(result.message || 'Failed to fetch categories');
         }
       } catch (err) {
         console.error("Failed to fetch categories:", err);
+        toast.error("Failed to load categories");
       } finally {
         setLoadingCategories(false);
       }
@@ -212,38 +220,41 @@ export default function Listings({ isLoggedIn, setIsLoggedIn, currentUser: propC
         // Small delay to ensure the UI shows loading state
         await new Promise(resolve => setTimeout(resolve, 50));
         
-        // Get total count of products
-        const countResult = await adminApi.get('/products?pageNumber=1&pageSize=1000');
-        const totalCount = countResult.data ? countResult.data.length : 0;
-        setTotalProducts(totalCount);
+        // Fetch products using the new API
+        const result = await productAPI.getProductsPaginated(currentPage, pageSize, 'newest');
         
-        // Calculate total pages based on actual product count
-        const calculatedPages = Math.ceil(totalCount / pageSize);
-        setTotalPages(calculatedPages);
-        
-        // For pagination, slice the data based on current page
-        const startIndex = (currentPage - 1) * pageSize;
-        const endIndex = startIndex + pageSize;
-        const paginatedData = countResult.data.slice(startIndex, endIndex);
-        
-        const formattedProducts = paginatedData.map((item, index) => ({
-          id: item.productID,
-          uniqueId: `${item.productID}_page_${currentPage}_index_${index}`, // Create unique identifier
-          title: item.productName,
-          image: item.productImage 
-            ? `https://adminecommerce.waapcoders.in/${item.productImage}`
-            : getRandomPlaceholder(item.productID),
-          price: parseFloat(item.price),
-          category: item.categoryName,
-          brand: item.brandName || 'No Brand',
-          categoryImage: item.categoryImage 
-            ? `https://adminecommerce.waapcoders.in${item.categoryImage}`
-            : '/placeholder-category.jpg'
-        }));
-        
-        // Add another small delay before setting products to ensure clean transition
-        await new Promise(resolve => setTimeout(resolve, 100));
-        setAllProducts(formattedProducts);
+        if (result.success) {
+          // Update pagination info
+          setTotalPages(result.pagination.totalPages);
+          setTotalProducts(result.pagination.totalPages * pageSize); // Approximate total
+          
+          // Format products from new API structure
+          const formattedProducts = result.data.map((item, index) => ({
+            id: item.id || item.productId,
+            uniqueId: `${item.id}_page_${currentPage}_index_${index}`,
+            title: item.name,
+            image: item.imageUrls && item.imageUrls.length > 0 
+              ? item.imageUrls[0]
+              : item.primaryImageUrl || getRandomPlaceholder(item.id),
+            price: parseFloat(item.sellingPrice || item.basePrice),
+            originalPrice: item.basePrice !== item.sellingPrice ? parseFloat(item.basePrice) : null,
+            discount: item.discountPercentage || 0,
+            category: item.categoryName || 'Uncategorized',
+            brand: item.brandName || item.vendorName || 'No Brand',
+            rating: item.averageRating || 0,
+            ratingCount: item.totalReviews || 0,
+            stock: item.stockQuantity,
+            isOnSale: item.isOnSale,
+            description: item.shortDescription || item.description,
+            sku: item.sku
+          }));
+          
+          // Add another small delay before setting products to ensure clean transition
+          await new Promise(resolve => setTimeout(resolve, 100));
+          setAllProducts(formattedProducts);
+        } else {
+          throw new Error(result.message);
+        }
       } catch (err) {
         console.error("Failed to fetch products:", err);
         setError("Failed to load products");

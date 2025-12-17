@@ -8,7 +8,7 @@ import RegisterModal from "./RegisterModal"
 import ForgotPasswordModal from "./ForgotPasswordModal"
 import CartDropdown from "./CartDropdown"
 import { useTheme } from "../contexts/ThemeContext" // Add this import
-import { adminApi } from '../services/Api';
+import { adminApi, categoryAPI } from '../services/Api';
 
 const Navbar = ({ cartCount = 0 }) => {
   const { darkMode, setDarkMode } = useTheme() // Add this line
@@ -86,33 +86,39 @@ const Navbar = ({ cartCount = 0 }) => {
     const fetchMenuItems = async () => {
       setIsMenuLoading(true);
       try {
-        const response = await adminApi.get('/menu');
-        if (response.data) {
-          // Extract and transform category data
-          const categories = response.data
-            .filter(category => category.categoryName) // Filter out any empty category names
-            .map(category => ({
-              name: category.categoryName,
-              path: `/categories/${category.categoryName.toLowerCase().replace(/\s+/g, '-')}`,
-              image: category.categoryImage
+        const response = await categoryAPI.getCategoryTree(true);
+        if (response.success && response.data) {
+          // Transform hierarchical category data
+          const categories = response.data.map(item => ({
+            id: item.category.id,
+            name: item.category.name,
+            slug: item.category.slug,
+            path: `/category/${item.category.id}/subcategories`,
+            image: item.category.imageUrl || item.category.iconUrl,
+            hasChildren: item.children && item.children.length > 0,
+            children: item.children.map(child => ({
+              id: child.category.id,
+              name: child.category.name,
+              slug: child.category.slug,
+              path: `/category/${child.category.id}`,
+              image: child.category.imageUrl || child.category.iconUrl,
+              hasChildren: child.children && child.children.length > 0,
+              children: child.children.map(grandchild => ({
+                id: grandchild.category.id,
+                name: grandchild.category.name,
+                slug: grandchild.category.slug,
+                path: `/category/${grandchild.category.id}`,
+                image: grandchild.category.imageUrl || grandchild.category.iconUrl
+              }))
             }))
-            .sort((a, b) => a.name.localeCompare(b.name)); // Sort alphabetically
+          }));
 
           setMenuItems(categories);
         }
       } catch (error) {
+        console.error('Failed to fetch categories:', error);
         // Fallback menu items if API fails
-        setMenuItems([
-          { name: "BOTTLE", path: "/menu/bottle" },
-          { name: "COMBOS", path: "/menu/combos" },
-          { name: "CUSHIONS", path: "/menu/cushions" },
-          { name: "FRAMES", path: "/menu/frames" },
-          { name: "WALLET", path: "/menu/wallet" },
-          { name: "WALL CLOCK", path: "/menu/wall-clock" },
-          { name: "DIWALI DIYA", path: "/menu/diwali-diya" },
-          { name: "CUTOUT STANDY", path: "/menu/cutout-standy" },
-          // Add other categories as fallback
-        ]);
+        setMenuItems([]);
       } finally {
         setIsMenuLoading(false);
       }
@@ -207,7 +213,7 @@ const Navbar = ({ cartCount = 0 }) => {
             : "bg-white dark:bg-gray-900 shadow-md"
         }`}
       >
-        <div className="container mx-auto px-6  ">
+        <div className="container mx-auto px-6">
           <div className="flex justify-between items-center h-16 lg:h-20">
             {/* Logo */}
             <Link
@@ -250,27 +256,59 @@ const Navbar = ({ cartCount = 0 }) => {
               ) : (
                 <>
                   {menuItems.slice(0, 5).map((item, index) => (
-                    <Link
-                      key={index}
-                      to={`/categories/${item.name.toLowerCase().replace(/\s+/g, '-')}`} // Changed from /menu to /categories
-                      className="relative px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-[#007580] dark:hover:text-teal-400 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 group"
-                    >
-                      <span className="flex items-center space-x-1">
+                    <div key={index} className="relative group">
+                      <Link
+                        to={item.path}
+                        className="relative px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-[#007580] dark:hover:text-teal-400 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 flex items-center space-x-1"
+                      >
                         <span>{item.name}</span>
-                      </span>
+                        {item.hasChildren && <ChevronDown className="w-3 h-3 group-hover:rotate-180 transition-transform duration-300" />}
+                      </Link>
                       <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-[#007580] dark:bg-teal-400 group-hover:w-full transition-all duration-300"></div>
-                    </Link>
+                      
+                      {/* Subcategory Dropdown */}
+                      {item.hasChildren && item.children.length > 0 && (
+                        <div className="absolute top-full left-0 mt-1 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-[60] max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent hover:scrollbar-thumb-gray-400 dark:hover:scrollbar-thumb-gray-500">
+                          {item.children.map((child, childIndex) => (
+                            <div key={childIndex} className="relative group/child">
+                              <Link
+                                to={child.path}
+                                className="flex items-center justify-between px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:text-[#007580] dark:hover:text-teal-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 first:rounded-t-xl last:rounded-b-xl"
+                              >
+                                <span>{child.name}</span>
+                                {child.hasChildren && <ChevronDown className="w-3 h-3 -rotate-90" />}
+                              </Link>
+                              
+                              {/* Third Level Dropdown */}
+                              {child.hasChildren && child.children.length > 0 && (
+                                <div className="absolute left-full top-0 ml-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 opacity-0 invisible group-hover/child:opacity-100 group-hover/child:visible transition-all duration-300 z-[70] max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent">
+                                  {child.children.map((grandchild, grandchildIndex) => (
+                                    <Link
+                                      key={grandchildIndex}
+                                      to={grandchild.path}
+                                      className="flex items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:text-[#007580] dark:hover:text-teal-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 first:rounded-t-xl last:rounded-b-xl"
+                                    >
+                                      {grandchild.name}
+                                    </Link>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   ))}
                   <div className="relative group">
                     <button className="flex items-center space-x-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-[#007580] dark:hover:text-teal-400 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300">
                       <span>More</span>
                       <ChevronDown className="w-4 h-4 group-hover:rotate-180 transition-transform duration-300" />
                     </button>
-                    <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-50">
+                    <div className="absolute top-full right-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-[60] max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent">
                       {menuItems.slice(5).map((item, index) => (
                         <Link
                           key={index}
-                          to={`/categories/${item.name.toLowerCase().replace(/\s+/g, '-')}`} // Changed path here too
+                          to={item.path}
                           className="flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:text-[#007580] dark:hover:text-teal-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 first:rounded-t-xl last:rounded-b-xl"
                         >
                           <span>{item.name}</span>
@@ -339,7 +377,7 @@ const Navbar = ({ cartCount = 0 }) => {
                 {/* User Dropdown */}
                 {isLoggedIn && (
                   <div
-                    className={`absolute top-full right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 transition-all duration-300 transform z-50 ${
+                    className={`absolute top-full right-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 transition-all duration-300 transform z-[60] ${
                       isUserMenuOpen ? "opacity-100 visible translate-y-0" : "opacity-0 invisible translate-y-2"
                     }`}
                   >
@@ -454,7 +492,7 @@ const Navbar = ({ cartCount = 0 }) => {
 
         {/* Mobile Menu Overlay */}
         <div
-          className={`xl:hidden fixed inset-0 bg-black transition-opacity duration-300 ${
+          className={`xl:hidden fixed inset-0 bg-black transition-opacity duration-300 z-40 ${
             isMobileMenuOpen ? "opacity-50 visible" : "opacity-0 invisible"
           }`}
           style={{ top: scrolled ? "64px" : "80px" }}
@@ -463,7 +501,7 @@ const Navbar = ({ cartCount = 0 }) => {
 
         {/* Mobile Menu */}
         <div
-          className={`xl:hidden fixed left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-700 shadow-2xl transition-all duration-500 ease-out transform ${
+          className={`xl:hidden fixed left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-700 shadow-2xl transition-all duration-500 ease-out transform z-50 ${
             isMobileMenuOpen ? "translate-y-0 opacity-100 visible" : "-translate-y-full opacity-0 invisible"
           }`}
           style={{ top: scrolled ? "64px" : "80px" }}
@@ -574,7 +612,7 @@ const Navbar = ({ cartCount = 0 }) => {
                 menuItems.map((item, index) => (
                   <Link
                     key={index}
-                    to={`/categories/${item.name.toLowerCase().replace(/\s+/g, '-')}`} // Changed here as well
+                    to={item.path}
                     onClick={closeMobileMenu}
                     className="flex items-center space-x-4 p-4 text-gray-700 dark:text-gray-300 hover:text-[#007580] dark:hover:text-teal-400 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-2xl transition-all duration-300 group"
                     style={{ animationDelay: `${index * 50}ms` }}

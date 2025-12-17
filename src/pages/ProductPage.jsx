@@ -97,39 +97,61 @@ const ProductDetails = () => {
         setLoading(true);
         setError(null);
         
-        const response = await adminApi.get(`/productdetails/?productId=${id}`);
-        if (response.data.success) {
-          const apiProduct = response.data.data;
+        const response = await productAPI.getProductDetails(id);
+        if (response.success) {
+          const apiProduct = response.data;
+          
+          // Calculate discount display
+          const discountText = apiProduct.discountPercentage > 0 
+            ? `${apiProduct.discountPercentage}% off` 
+            : null;
           
           const transformedProduct = {
-            id: apiProduct.productID,
-            name: apiProduct.productName,
-            brand: apiProduct.brandName || "Premium Brand",
-            price: formatCurrency(apiProduct.price),
-            originalPrice: formatCurrency(apiProduct.price * 1.2),
-            discount: "20% off",
-            rating: 4.5,
-            reviews: 123,
-            stock: apiProduct.stock ?? true,
-            category: apiProduct.categoryName,
-            description: apiProduct.description || "No description available",
-            images: apiProduct.images.map(image => 
-              `https://adminecommerce.waapcoders.in${image}`
-            ),
-            features: [
-              "Premium Quality",
-              "Custom Design",
-              "Durable Material",
-              "Perfect Gift Option",
-              "Satisfaction Guaranteed"
-            ],
-            categoryID: apiProduct.categoryID,
-            brandID: apiProduct.brandID
+            id: apiProduct.id || apiProduct.productId,
+            name: apiProduct.name,
+            brand: apiProduct.brandName || apiProduct.vendorName || "Premium Brand",
+            price: formatCurrency(apiProduct.sellingPrice),
+            originalPrice: apiProduct.basePrice !== apiProduct.sellingPrice 
+              ? formatCurrency(apiProduct.basePrice) 
+              : null,
+            discount: discountText,
+            rating: apiProduct.averageRating || 0,
+            reviews: apiProduct.totalReviews || 0,
+            stock: apiProduct.stockQuantity || 0,
+            category: apiProduct.categoryName || "Uncategorized",
+            description: apiProduct.description || apiProduct.shortDescription || "No description available",
+            shortDescription: apiProduct.shortDescription,
+            images: apiProduct.imageUrls && apiProduct.imageUrls.length > 0 
+              ? apiProduct.imageUrls 
+              : (apiProduct.primaryImageUrl ? [apiProduct.primaryImageUrl] : []),
+            videoUrls: apiProduct.videoUrls || [],
+            variants: apiProduct.variants || [],
+            features: apiProduct.features && apiProduct.features.length > 0 
+              ? apiProduct.features 
+              : [
+                  "Premium Quality",
+                  "Custom Design",
+                  "Durable Material",
+                  "Perfect Gift Option",
+                  "Satisfaction Guaranteed"
+                ],
+            specifications: apiProduct.specifications,
+            attributes: apiProduct.attributes,
+            metaTags: apiProduct.metaTags,
+            sku: apiProduct.sku,
+            isOnSale: apiProduct.isOnSale,
+            isFeatured: apiProduct.isFeatured,
+            totalSales: apiProduct.totalSales || 0,
+            viewCount: apiProduct.viewCount || 0,
+            categoryIds: apiProduct.categoryIds || [],
+            vendorId: apiProduct.vendorId,
+            vendorType: apiProduct.vendorType,
+            currency: apiProduct.currency || 'USD'
           };
           
           setProduct(transformedProduct);
         } else {
-          throw new Error('Failed to fetch product');
+          throw new Error(response.message || 'Failed to fetch product');
         }
       } catch (err) {
         setError("Failed to load product details");

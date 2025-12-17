@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { adminApi } from '../services/Api';
+import { adminApi, productAPI } from '../services/Api';
 import { Filter, X, Grid, List } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
 import FilterSidebar from '../components/FilterSidebar';
 import HorizontalProductCard from '../components/HorizontalProductCard.jsx';
 import { Link } from "react-router-dom";
+import toast from 'react-hot-toast';
+
 export default function Category() {
-  const { name } = useParams();
+  const { name, categoryId } = useParams(); // Accept both name and categoryId
   const [categoryData, setCategoryData] = useState(null);
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
@@ -30,56 +32,95 @@ export default function Category() {
       setError('');
       
       try {
-        const response = await adminApi.get('/menu');
-        
-        if (response.data) {
-          // Find the matching category (case-insensitive)
-          const category = response.data.find(
-            cat => cat.categoryName.toLowerCase() === name.replace(/-/g, ' ').toLowerCase()
-          );
-
-          if (category) {
-            setCategoryData(category);
+        // If categoryId is provided, fetch products by category ID (from subcategories)
+        if (categoryId) {
+          const result = await productAPI.getProductsByCategory(categoryId);
+          
+          if (result.success && result.data) {
+            // Format products from the new API
+            const formattedProducts = result.data.map(product => ({
+              id: product.id || product.productId,
+              title: product.name,
+              price: parseFloat(product.sellingPrice || product.basePrice),
+              originalPrice: product.basePrice !== product.sellingPrice ? parseFloat(product.basePrice) : null,
+              discount: product.discountPercentage || 0,
+              image: product.imageUrls && product.imageUrls.length > 0 
+                ? product.imageUrls[0]
+                : product.primaryImageUrl || '/placeholder-product.jpg',
+              brand: product.brandName || product.vendorName || 'No Brand',
+              category: product.categoryName || 'Category',
+              rating: product.averageRating || 0,
+              ratingCount: product.totalReviews || 0,
+              stock: product.stockQuantity || 0,
+              isOnSale: product.isOnSale,
+              description: product.shortDescription || product.description,
+              sku: product.sku
+            }));
             
-            // Extract and validate products from the category's brands
-            const categoryProducts = category.brands
-              .flatMap(brand => 
-                brand.products
-                  // Filter out invalid products
-                  .filter(product => 
-                    product.productID && 
-                    product.productName && 
-                    product.productImage && 
-                    product.price
-                  )
-                  .map(product => ({
-                    id: product.productID,
-                    title: product.productName,
-                    price: parseFloat(product.price),
-                    image: `https://adminecommerce.waapcoders.in${product.productImage}`, // Add base URL
-                    brand: brand.brandName || "Generic",
-                    category: category.categoryName,
-                    rating: Math.floor(Math.random() * 5) + 1,
-                    stock: 10
-                  }))
-              )
-              .filter(Boolean); // Remove any undefined entries
-            
-            setProducts(categoryProducts);
-            setFilteredProducts(categoryProducts);
+            setCategoryData({
+              categoryName: formattedProducts[0]?.category || 'Category',
+              categoryImage: formattedProducts[0]?.image || '/placeholder-category.jpg'
+            });
+            setProducts(formattedProducts);
+            setFilteredProducts(formattedProducts);
           } else {
-            setError('Category not found');
+            throw new Error(result.message || 'Failed to fetch products');
+          }
+        } else if (name) {
+          // Fallback to old method using category name
+          const response = await adminApi.get('/menu');
+          
+          if (response.data) {
+            // Find the matching category (case-insensitive)
+            const category = response.data.find(
+              cat => cat.categoryName.toLowerCase() === name.replace(/-/g, ' ').toLowerCase()
+            );
+
+            if (category) {
+              setCategoryData(category);
+              
+              // Extract and validate products from the category's brands
+              const categoryProducts = category.brands
+                .flatMap(brand => 
+                  brand.products
+                    // Filter out invalid products
+                    .filter(product => 
+                      product.productID && 
+                      product.productName && 
+                      product.productImage && 
+                      product.price
+                    )
+                    .map(product => ({
+                      id: product.productID,
+                      title: product.productName,
+                      price: parseFloat(product.price),
+                      image: `https://adminecommerce.waapcoders.in${product.productImage}`, // Add base URL
+                      brand: brand.brandName || "Generic",
+                      category: category.categoryName,
+                      rating: Math.floor(Math.random() * 5) + 1,
+                      stock: 10
+                    }))
+                )
+                .filter(Boolean); // Remove any undefined entries
+              
+              setProducts(categoryProducts);
+              setFilteredProducts(categoryProducts);
+            } else {
+              setError('Category not found');
+            }
           }
         }
       } catch (error) {
+        console.error('Failed to fetch category data:', error);
         setError('Failed to fetch category data');
+        toast.error('Failed to load products');
       } finally {
         setLoading(false);
       }
     };
 
     fetchCategoryData();
-  }, [name]);
+  }, [name, categoryId]);
 
   // Get unique brands from the category's products
   const uniqueBrands = [...new Set(products.map(p => p.brand).filter(Boolean))];
@@ -173,7 +214,7 @@ export default function Category() {
               </Link>
               <span className="text-gray-400 dark:text-gray-500 mx-2">›</span>
               <span className="text-gray-700 dark:text-gray-200 font-medium capitalize">
-                {categoryData?.categoryName || name.replace(/-/g, ' ')}
+                {categoryData?.categoryName || (name ? name.replace(/-/g, ' ') : 'Category')}
               </span>
             </nav>
           </div>
@@ -184,7 +225,7 @@ export default function Category() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white capitalize">
-                {name?.replace('-', ' ')} Products
+                {categoryData?.categoryName || (name ? name.replace('-', ' ') : 'Category')} Products
               </h1>
               <p className="text-gray-600 dark:text-gray-300 mt-1">
                 {loading ? 'Loading...' : `${filteredProducts.length} products found`}
