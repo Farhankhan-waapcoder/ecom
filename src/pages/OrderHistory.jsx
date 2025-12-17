@@ -3,15 +3,58 @@ import { useEffect, useState } from "react";
 import { Package, Trash2, AlertCircle } from "lucide-react";
 import { ShoppingBag, ArrowRight } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { orderAPI } from '../services/Api';
 
 export default function OrderHistory() {
   const [orders, setOrders] = useState([]);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [pagination, setPagination] = useState({ page: 1, pageSize: 10, total: 0 });
 
   useEffect(() => {
-    const data = JSON.parse(localStorage.getItem("orders")) || [];
-    setOrders(data);
+    fetchOrders();
   }, []);
+
+  const fetchOrders = async () => {
+    setLoading(true);
+    try {
+      const result = await orderAPI.getMyOrders(pagination.page, pagination.pageSize);
+      
+      if (result.success) {
+        // Transform API data to match component structure
+        const transformedOrders = result.data.map(order => ({
+          id: order._id,
+          apiOrderId: order._id,
+          items: order.Items.map(item => ({
+            productId: item.ProductId,
+            productName: item.ProductName,
+            productPrice: (parseFloat(item.UnitPrice) / 100).toFixed(2), // Convert from cents
+            quantity: item.Quantity,
+            totalPrice: (parseFloat(item.TotalPrice) / 100).toFixed(2)
+          })),
+          totalAmount: (parseFloat(order.TotalAmount) / 100).toFixed(2),
+          subTotal: (parseFloat(order.SubTotal) / 100).toFixed(2),
+          tax: (parseFloat(order.Tax) / 100).toFixed(2),
+          shippingCost: (parseFloat(order.ShippingCost) / 100).toFixed(2),
+          status: order.Status,
+          orderDate: order.CreatedAt,
+          shippingAddress: order.ShippingAddress,
+          billingAddress: order.BillingAddress,
+          notes: order.Notes
+        }));
+        
+        setOrders(transformedOrders);
+        setPagination(result.pagination);
+      } else {
+        toast.error(result.message || 'Failed to fetch orders');
+      }
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+      toast.error('Failed to load orders');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -39,6 +82,17 @@ export default function OrderHistory() {
     
     toast.success("cancelled");
   };
+
+if (loading) {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center px-4">
+      <div className="text-center">
+        <div className="animate-spin h-12 w-12 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4" />
+        <p className="text-gray-600 dark:text-gray-400">Loading your orders...</p>
+      </div>
+    </div>
+  );
+}
 
 if (orders.length === 0) {
   return (
@@ -167,7 +221,7 @@ return (
                       </div>
                       <div>
                         <p className="text-xs text-gray-600 dark:text-gray-400">Total</p>
-                        <p className="font-medium text-gray-900 dark:text-white">₹{order.productPrice}</p>
+                        <p className="font-medium text-gray-900 dark:text-white">${order.totalAmount}</p>
                       </div>
                     </div>
                   </div>
@@ -181,11 +235,11 @@ return (
                       </div>
                       <div className="border-l border-gray-200 dark:border-gray-600 pl-4">
                         <p className="text-sm text-gray-600 dark:text-gray-400">Total</p>
-                        <p className="font-medium text-gray-900 dark:text-white">₹{order.productPrice}</p>
+                        <p className="font-medium text-gray-900 dark:text-white">${order.totalAmount}</p>
                       </div>
                       <div className="border-l border-gray-200 dark:border-gray-600 pl-4">
                         <p className="text-sm text-gray-600 dark:text-gray-400">Order ID</p>
-                        <p className="font-medium text-gray-900 dark:text-white">#{order.id}</p>
+                        <p className="font-medium text-gray-900 dark:text-white truncate max-w-[200px]" title={order.id}>#{order.id.substring(0, 8)}...</p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-3">
@@ -206,29 +260,39 @@ return (
                 </div>
 
                 {/* Product Info */}
-                <Link
-                  to={`/order/${order.id}`}
-                  className="flex items-start space-x-3 sm:space-x-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-lg p-3 sm:p-4 -m-3 sm:-m-4 transition-colors"
-                >
-                  <img 
-                    src={order.productImage} 
-                    alt={order.productName} 
-                    className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg object-cover border dark:border-gray-600 flex-shrink-0"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-gray-900 dark:text-white mb-1 text-sm sm:text-base line-clamp-2">{order.productName}</h3>
-                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-1 sm:mb-2">
-                      Delivered to: {order.customerInfo.firstName} {order.customerInfo.lastName}
-                    </p>
-                    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-500 truncate">
-                      {order.customerInfo.city}, {order.customerInfo.state}
-                    </p>
-                  </div>
-                  <div className="text-right flex-shrink-0">
-                    <p className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">₹{order.productPrice}</p>
-                    <p className="text-xs sm:text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 mt-1">View Details →</p>
-                  </div>
-                </Link>
+                <div className="space-y-3">
+                  {order.items && order.items.map((item, idx) => (
+                    <Link
+                      key={idx}
+                      to={`/order/${order.id}`}
+                      className="flex items-start space-x-3 sm:space-x-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-lg p-3 sm:p-4 -m-3 sm:-m-4 transition-colors"
+                    >
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
+                        <Package className="w-8 h-8 text-gray-400 dark:text-gray-500" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-gray-900 dark:text-white mb-1 text-sm sm:text-base line-clamp-2">{item.productName}</h3>
+                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-1">
+                          Quantity: {item.quantity} × ${item.productPrice}
+                        </p>
+                        <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">
+                          Subtotal: ${item.totalPrice || (parseFloat(item.productPrice) * item.quantity).toFixed(2)}
+                        </p>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <p className="text-xs sm:text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 mt-1">View Details →</p>
+                      </div>
+                    </Link>
+                  ))}
+                  
+                  {/* Shipping Address */}
+                  {order.shippingAddress && (
+                    <div className="pt-3 px-3 border-t border-gray-100 dark:border-gray-700">
+                      <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">Shipping Address:</p>
+                      <p className="text-sm text-gray-900 dark:text-white">{order.shippingAddress}</p>
+                    </div>
+                  )}
+                </div>
 
                 {/* Action Buttons */}
                 <div className="mt-4 pt-4 border-t dark:border-gray-600">

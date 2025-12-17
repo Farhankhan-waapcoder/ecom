@@ -1,16 +1,16 @@
 import { MoveRight } from "lucide-react";
 import { useState } from "react";
 import toast from 'react-hot-toast';
-import { adminApi } from '../services/Api'; // Import the adminApi
+import { authAPI } from '../services/Api';
 
 const LoginModal =  ({ setIsLoggedIn, onClose, onSwitchToRegister, onSwitchToForgot })=> {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  // Add loading state and error state
+  const [twoFactorCode, setTwoFactorCode] = useState("");
+  const [showTwoFactor, setShowTwoFactor] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formError, setFormError] = useState("");
 
-  // Update handleLogin with improved error handling and loading state
   const handleLogin = async (e) => {
     e.preventDefault();
     setFormError("");
@@ -21,16 +21,26 @@ const LoginModal =  ({ setIsLoggedIn, onClose, onSwitchToRegister, onSwitchToFor
       return;
     }
 
+    if (showTwoFactor && !twoFactorCode) {
+      setFormError("Please enter 2FA code");
+      return;
+    }
+
     setIsLoading(true);
     
     try {
-      const response = await adminApi.post('/auth/login', {
-        UserName: email,
-        password: password
-      });
+      const result = await authAPI.login(email, password, showTwoFactor ? twoFactorCode : null);
 
-      if (response.data.status === "success") {
-        const userData = response.data.data;
+      if (result.success) {
+        const userData = result.data;
+        
+        // Check if 2FA is required
+        if (userData.requires2FA && !showTwoFactor) {
+          setShowTwoFactor(true);
+          toast.info("Please enter your 2FA code");
+          setIsLoading(false);
+          return;
+        }
         
         localStorage.setItem("user", JSON.stringify({
           userId: userData.userId,
@@ -38,14 +48,15 @@ const LoginModal =  ({ setIsLoggedIn, onClose, onSwitchToRegister, onSwitchToFor
           email: userData.email,
           role: userData.role
         }));
-        localStorage.setItem("token", userData.token);
         
         setIsLoggedIn(true);
-        toast.success(response.data.message || "Successfully logged in!");
+        toast.success(result.message || "Successfully logged in!");
         onClose();
+      } else {
+        throw new Error(result.message || "Login failed");
       }
     } catch (error) {
-      const errorMessage = error.response?.data?.message || "Invalid email or password";
+      const errorMessage = error.message || error.response?.data?.message || "Invalid email or password";
       setFormError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -60,41 +71,71 @@ const LoginModal =  ({ setIsLoggedIn, onClose, onSwitchToRegister, onSwitchToFor
 
       {/* Modal Content */}
       <div className="relative bg-white dark:bg-gray-900 rounded-lg p-8 w-full max-w-md modal-pop border border-black dark:border-gray-700 hover:shadow-xl z-10">
-        <h3 className="text-2xl font-semibold mb-4 text-center text-black dark:text-white">Login</h3>
+        <h3 className="text-2xl font-semibold mb-4 text-center text-black dark:text-white">
+          {showTwoFactor ? "Two-Factor Authentication" : "Login"}
+        </h3>
         <form onSubmit={handleLogin} className="space-y-4">
-          <input
-            type="email"
-            placeholder="Your Email..."
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full h-[50px] bg-[#f0f2f3] dark:bg-gray-800 dark:text-white rounded-lg pl-3.5"
-          />
-          <input
-            type="password"
-            placeholder="Your Password..."
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full h-[50px] bg-[#f0f2f3] dark:bg-gray-800 dark:text-white rounded-lg pl-3.5"
-          />
+          {!showTwoFactor ? (
+            <>
+              <input
+                type="email"
+                placeholder="Your Email..."
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full h-[50px] bg-[#f0f2f3] dark:bg-gray-800 dark:text-white rounded-lg pl-3.5"
+              />
+              <input
+                type="password"
+                placeholder="Your Password..."
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full h-[50px] bg-[#f0f2f3] dark:bg-gray-800 dark:text-white rounded-lg pl-3.5"
+              />
+            </>
+          ) : (
+            <div className="space-y-2">
+              <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
+                Enter the 6-digit code from your authenticator app
+              </p>
+              <input
+                type="text"
+                placeholder="000000"
+                value={twoFactorCode}
+                onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                maxLength={6}
+                className="w-full h-[50px] bg-[#f0f2f3] dark:bg-gray-800 dark:text-white rounded-lg pl-3.5 text-center text-2xl tracking-widest"
+              />
+              <button
+                type="button"
+                onClick={() => setShowTwoFactor(false)}
+                className="text-sm text-[#007580] dark:text-[#38b2ac] hover:underline"
+              >
+                ← Back to login
+              </button>
+            </div>
+          )}
+          
           <button
             type="submit"
             disabled={isLoading}
             className="w-full h-[50px] bg-[#007580] rounded-lg text-white font-semibold flex justify-center items-center gap-2 disabled:opacity-50"
           >
-            {isLoading ? "Logging in..." : "Login"} {!isLoading && <MoveRight />}
+            {isLoading ? "Logging in..." : showTwoFactor ? "Verify Code" : "Login"} {!isLoading && <MoveRight />}
           </button>
 
-          <button
-            type="button"
-            className="w-full h-[50px] border border-[#ccc] dark:border-gray-600 bg-white dark:bg-gray-800 text-black dark:text-white font-medium flex justify-center items-center gap-2 hover:shadow-md transition"
-          >
-            <img
-              src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-              alt="Google"
-              className="w-5 h-5"
-            />
-            Continue with Google
-          </button>
+          {!showTwoFactor && (
+            <button
+              type="button"
+              className="w-full h-[50px] border border-[#ccc] dark:border-gray-600 bg-white dark:bg-gray-800 text-black dark:text-white font-medium flex justify-center items-center gap-2 hover:shadow-md transition"
+            >
+              <img
+                src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                alt="Google"
+                className="w-5 h-5"
+              />
+              Continue with Google
+            </button>
+          )}
         </form>
 
         {formError && (
@@ -103,24 +144,28 @@ const LoginModal =  ({ setIsLoggedIn, onClose, onSwitchToRegister, onSwitchToFor
           </p>
         )}
 
-        <p
-          onClick={onSwitchToRegister}
-          className="text-center mt-4 text-[#007580] dark:text-[#38b2ac] cursor-pointer"
-        >
-          Don’t have an account? Register
-        </p>
-        <p
-          onClick={onSwitchToForgot}
-          className="text-center mt-2 text-[#007580] dark:text-[#38b2ac] cursor-pointer"
-        >
-          Forgot Password?
-        </p>
-        <p
-          onClick={onClose}
-          className="text-center mt-2 text-gray-500 dark:text-gray-400 underline cursor-pointer"
-        >
-          Close
-        </p>
+        {!showTwoFactor && (
+          <>
+            <p
+              onClick={onSwitchToRegister}
+              className="text-center mt-4 text-[#007580] dark:text-[#38b2ac] cursor-pointer"
+            >
+              Don't have an account? Register
+            </p>
+            <p
+              onClick={onSwitchToForgot}
+              className="text-center mt-2 text-[#007580] dark:text-[#38b2ac] cursor-pointer"
+            >
+              Forgot Password?
+            </p>
+            <p
+              onClick={onClose}
+              className="text-center mt-2 text-gray-500 dark:text-gray-400 underline cursor-pointer"
+            >
+              Close
+            </p>
+          </>
+        )}
       </div>
     </div>
   );

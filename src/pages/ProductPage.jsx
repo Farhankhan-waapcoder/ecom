@@ -4,7 +4,7 @@ import { createPortal } from 'react-dom';
 import SimilarProducts from '../components/SimilarProducts.jsx';
 import { Star, Heart, ShoppingCart, Minus, Plus, Truck, Shield, RotateCcw, ArrowLeft, Upload, X, Share2, Facebook, Instagram, Twitter, Send, Check, Sparkles, Award, Clock, Package, Zap, TrendingUp } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { productAPI } from '../services/Api.js';
+import { productAPI, wishlistAPI } from '../services/Api.js';
 import ProductLoader from '../components/skeleton/ProductLoader.jsx';
 import { Link } from 'react-router-dom';
 import { adminApi } from '../services/Api.js';
@@ -14,6 +14,7 @@ const ProductDetails = () => {
   const navigate = useNavigate();
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 });
   const [isZoomed, setIsZoomed] = useState(false);
@@ -246,15 +247,59 @@ const ProductDetails = () => {
       },
     });
   };
-  
-  const handleToggleWishlist = () => {
-    setIsWishlisted(!isWishlisted);
-    toast.success(isWishlisted ? "Removed from wishlist" : "Added to wishlist", {
-      icon: isWishlisted ? '💔' : '❤️',
-      style: {
-        borderRadius: '12px',
-      },
-    });
+
+  // Check if product is in wishlist
+  useEffect(() => {
+    const checkWishlistStatus = async () => {
+      if (!isLoggedIn || !product) return;
+      
+      try {
+        const response = await wishlistAPI.getWishlist();
+        if (response.success && response.data?.items) {
+          const isInWishlist = response.data.items.some(
+            item => item.productId === product.id
+          );
+          setIsWishlisted(isInWishlist);
+        }
+      } catch (error) {
+        console.error('Failed to check wishlist status:', error);
+      }
+    };
+
+    checkWishlistStatus();
+  }, [isLoggedIn, product]);
+
+  // Toggle wishlist
+  const handleToggleWishlist = async () => {
+    if (!isLoggedIn) {
+      toast.error("Please login to add items to wishlist");
+      return;
+    }
+    
+    setWishlistLoading(true);
+    try {
+      const result = isWishlisted 
+        ? await wishlistAPI.removeFromWishlist(product.id)
+        : await wishlistAPI.addToWishlist(product.id);
+      
+      if (result.success) {
+        setIsWishlisted(!isWishlisted);
+        toast.success(result.message || (isWishlisted ? "Removed from wishlist" : "Added to wishlist"), {
+          icon: isWishlisted ? '💔' : '❤️',
+          style: {
+            borderRadius: '12px',
+            background: isWishlisted ? '#64748b' : '#ec4899',
+            color: '#fff',
+          },
+        });
+      } else {
+        throw new Error(result.message);
+      }
+    } catch (error) {
+      toast.error(error.message || "Failed to update wishlist");
+    } finally {
+      setWishlistLoading(false);
+    }
   };
 
   const handleBuyNow = () => {
@@ -520,6 +565,30 @@ const ProductDetails = () => {
                 {/* Main Image Container */}
                 <div className="order-1 md:order-2 flex-1">
                   <div className="relative overflow-hidden rounded-3xl glass-effect shadow-large group">
+                    {/* Wishlist Button Overlay */}
+                    {product && (
+                      <button
+                        onClick={handleToggleWishlist}
+                        disabled={wishlistLoading}
+                        className={`absolute top-4 right-4 z-10 flex items-center justify-center w-14 h-14 rounded-2xl transition-all duration-200 hover-lift shadow-large backdrop-blur-sm ${
+                          isWishlisted 
+                            ? 'bg-gradient-to-br from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600' 
+                            : 'bg-white/90 dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-800 border-2 border-gray-200 dark:border-gray-700'
+                        } ${wishlistLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        title={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+                      >
+                        {wishlistLoading ? (
+                          <div className="w-6 h-6 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <Heart 
+                            className={`w-6 h-6 transition-transform hover:scale-110 ${
+                              isWishlisted ? 'fill-white text-white' : 'text-gray-700 dark:text-gray-300'
+                            }`} 
+                          />
+                        )}
+                      </button>
+                    )}
+
                     <div 
                       ref={imageContainerRef}
                       className="relative w-full h-70 sm:h-96 md:h-[500px] lg:h-[500px] overflow-hidden cursor-crosshair bg-white dark:bg-slate-800"

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Heart, ShoppingCart, Trash2, Star } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { wishlistAPI, cartAPI } from '../services/Api.js';
 
 export default function WishList() {
   const [wishlistItems, setWishlistItems] = useState([]);
@@ -12,7 +13,7 @@ export default function WishList() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const loadWishlistAndCart = () => {
+    const loadWishlistAndCart = async () => {
       try {
         const storedUser = localStorage.getItem("user");
         
@@ -21,14 +22,36 @@ export default function WishList() {
           setCurrentUser(parsedUser.email);
           setIsLoggedIn(true);
           
-          // Load user-specific wishlist and cart
-          const userWishlist = JSON.parse(localStorage.getItem(`wishlist_${parsedUser.email}`)) || [];
-          const userCart = JSON.parse(localStorage.getItem(`cart_${parsedUser.email}`)) || [];
+          // Fetch wishlist from API
+          const wishlistResponse = await wishlistAPI.getWishlist();
+          if (wishlistResponse.success && wishlistResponse.data?.items) {
+            // Transform API response to match component structure
+            const transformedWishlist = wishlistResponse.data.items.map(item => ({
+              id: item.productId,
+              productId: item.productId,
+              name: item.productName,
+              sku: item.productSku,
+              price: `$${(item.price / 100).toFixed(2)}`, // Convert from cents to dollars
+              originalPrice: item.price,
+              image: item.imageUrl,
+              discount: item.discountPercentage > 0 ? `${item.discountPercentage}% off` : null,
+              discountPercentage: item.discountPercentage,
+              stock: item.availableStock,
+              addedDate: item.addedDate,
+              rating: 4.5, // Default rating since API doesn't provide it
+              brand: 'Premium Brand', // Default brand
+              category: 'Product' // Default category
+            }));
+            setWishlistItems(transformedWishlist);
+          } else {
+            setWishlistItems([]);
+          }
           
-          setWishlistItems(userWishlist);
+          // Load cart from localStorage
+          const userCart = JSON.parse(localStorage.getItem(`cart_${parsedUser.email}`)) || [];
           setCartItems(userCart);
         } else {
-          // Load guest wishlist and cart
+          // Guest user - load from localStorage
           const guestWishlist = JSON.parse(localStorage.getItem("wishlist_guest")) || [];
           const guestCart = JSON.parse(localStorage.getItem("cart_guest")) || [];
           
@@ -37,6 +60,7 @@ export default function WishList() {
         }
       } catch (error) {
         console.error("Error loading wishlist:", error);
+        toast.error("Failed to load wishlist");
         setWishlistItems([]);
         setCartItems([]);
       } finally {
@@ -47,15 +71,35 @@ export default function WishList() {
     loadWishlistAndCart();
   }, []);
 
-  const handleRemoveFromWishlist = (productId) => {
-    const wishlistKey = isLoggedIn && currentUser ? `wishlist_${currentUser}` : "wishlist_guest";
-    const updatedWishlist = wishlistItems.filter(item => item.id !== productId);
-    
-    localStorage.setItem(wishlistKey, JSON.stringify(updatedWishlist));
-    setWishlistItems(updatedWishlist);
-    
-    const removedProduct = wishlistItems.find(item => item.id === productId);
-    toast.success(`${removedProduct?.name} removed from wishlist`);
+  const handleRemoveFromWishlist = async (productId) => {
+    if (isLoggedIn) {
+      // Remove from API
+      try {
+        const response = await wishlistAPI.removeFromWishlist(productId);
+        if (response.success) {
+          const updatedWishlist = wishlistItems.filter(item => item.id !== productId);
+          setWishlistItems(updatedWishlist);
+          
+          const removedProduct = wishlistItems.find(item => item.id === productId);
+          toast.success(response.message || `${removedProduct?.name} removed from wishlist`);
+        } else {
+          toast.error(response.message || 'Failed to remove from wishlist');
+        }
+      } catch (error) {
+        console.error('Error removing from wishlist:', error);
+        toast.error('Failed to remove from wishlist');
+      }
+    } else {
+      // Remove from localStorage for guest
+      const wishlistKey = "wishlist_guest";
+      const updatedWishlist = wishlistItems.filter(item => item.id !== productId);
+      
+      localStorage.setItem(wishlistKey, JSON.stringify(updatedWishlist));
+      setWishlistItems(updatedWishlist);
+      
+      const removedProduct = wishlistItems.find(item => item.id === productId);
+      toast.success(`${removedProduct?.name} removed from wishlist`);
+    }
   };
 
   const handleAddToCart = (product) => {
@@ -248,11 +292,25 @@ if (loading) {
             </button>
             
             <button
-              onClick={() => {
-                const wishlistKey = isLoggedIn && currentUser ? `wishlist_${currentUser}` : "wishlist_guest";
-                localStorage.setItem(wishlistKey, JSON.stringify([]));
-                setWishlistItems([]);
-                toast.success('Wishlist cleared');
+              onClick={async () => {
+                if (isLoggedIn) {
+                  try {
+                    const response = await wishlistAPI.clearWishlist();
+                    if (response.success) {
+                      setWishlistItems([]);
+                      toast.success(response.message || 'Wishlist cleared');
+                    } else {
+                      toast.error('Failed to clear wishlist');
+                    }
+                  } catch (error) {
+                    console.error('Error clearing wishlist:', error);
+                    toast.error('Failed to clear wishlist');
+                  }
+                } else {
+                  localStorage.setItem("wishlist_guest", JSON.stringify([]));
+                  setWishlistItems([]);
+                  toast.success('Wishlist cleared');
+                }
               }}
               className="bg-red-600 dark:bg-red-700 text-white px-6 py-3 rounded-lg hover:bg-red-700 dark:hover:bg-red-800 transition-colors"
             >

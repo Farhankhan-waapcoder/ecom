@@ -80,7 +80,7 @@ export default function App() {
           
           <Route path="/my-cart" element={<Cart />} />
           <Route path="/wishlist" element={<WishList />} />
-          <Route path="/checkout/:id" element={<CheckoutPage />} />
+          <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/about" element={<About />} />
           <Route path="/cookies" element={<CookiePolicy />} />

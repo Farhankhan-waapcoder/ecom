@@ -277,164 +277,154 @@ export const categoryAPI = {
 // CART API CALLS
 
 export const cartAPI = {
-  // Get all carts
-  getAllCarts: async () => {
+  // Get current user's cart
+  getCart: async () => {
     try {
-      const response = await fakeStoreApi.get('/carts');
+      const response = await adminApi.get('/v1/cart');
       return {
-        success: true,
-        data: response.data,
-        message: 'Carts fetched successfully'
+        success: response.data.success !== undefined ? response.data.success : true,
+        data: response.data.data || response.data,
+        message: response.data.message || 'Cart fetched successfully'
       };
     } catch (error) {
       return {
         success: false,
         error: error.response?.data || error.message,
-        message: 'Failed to fetch carts'
+        message: error.response?.data?.message || 'Failed to fetch cart'
       };
     }
   },
 
-  // Get carts with limit
-  getCartsWithLimit: async (limit = 5) => {
+  // Get cart item count
+  getCartCount: async () => {
     try {
-      const response = await fakeStoreApi.get(`/carts?limit=${limit}`);
+      const response = await adminApi.get('/v1/cart/count');
       return {
-        success: true,
-        data: response.data,
-        message: `Top ${limit} carts fetched successfully`
+        success: response.data.success !== undefined ? response.data.success : true,
+        data: response.data.data || response.data,
+        message: response.data.message || 'Cart count fetched successfully'
       };
     } catch (error) {
       return {
         success: false,
         error: error.response?.data || error.message,
-        message: 'Failed to fetch limited carts'
+        message: error.response?.data?.message || 'Failed to fetch cart count'
       };
     }
   },
 
-  // Get carts sorted
-  getCartsSorted: async (sort = 'desc') => {
+  // Add item to cart
+  addToCart: async (productId, quantity = 1, variantId = null) => {
     try {
-      const response = await fakeStoreApi.get(`/carts?sort=${sort}`);
+      const response = await adminApi.post('/v1/cart/add', {
+        productId,
+        quantity,
+        ...(variantId && { variantId })
+      });
       return {
-        success: true,
-        data: response.data,
-        message: `Carts sorted ${sort} fetched successfully`
+        success: response.data.success !== undefined ? response.data.success : true,
+        data: response.data.data || response.data,
+        message: response.data.message || 'Item added to cart successfully'
       };
     } catch (error) {
       return {
         success: false,
         error: error.response?.data || error.message,
-        message: 'Failed to fetch sorted carts'
+        message: error.response?.data?.message || 'Failed to add item to cart'
       };
     }
   },
 
-  // Get carts by date range
-  getCartsByDateRange: async (startDate, endDate) => {
+  // Update cart item quantity
+  updateCartItem: async (productId, quantity) => {
     try {
-      const response = await fakeStoreApi.get(`/carts?startdate=${startDate}&enddate=${endDate}`);
+      const response = await adminApi.put(`/v1/cart/update/${productId}`, {
+        quantity
+      });
       return {
-        success: true,
-        data: response.data,
-        message: 'Carts by date range fetched successfully'
+        success: response.data.success !== undefined ? response.data.success : true,
+        data: response.data.data || response.data,
+        message: response.data.message || 'Cart item updated successfully'
       };
     } catch (error) {
       return {
         success: false,
         error: error.response?.data || error.message,
-        message: 'Failed to fetch carts by date range'
+        message: error.response?.data?.message || 'Failed to update cart item'
       };
     }
   },
 
-  // Get single cart
-  getCartById: async (id) => {
+  // Remove item from cart
+  removeFromCart: async (productId) => {
     try {
-      const response = await fakeStoreApi.get(`/carts/${id}`);
+      const response = await adminApi.delete(`/v1/cart/remove/${productId}`);
       return {
-        success: true,
-        data: response.data,
-        message: 'Cart fetched successfully'
+        success: response.data.success !== undefined ? response.data.success : true,
+        data: response.data.data || response.data,
+        message: response.data.message || 'Item removed from cart successfully'
       };
     } catch (error) {
       return {
         success: false,
         error: error.response?.data || error.message,
-        message: 'Failed to fetch cart'
+        message: error.response?.data?.message || 'Failed to remove item from cart'
       };
     }
   },
 
-  // Get user carts
-  getUserCarts: async (userId) => {
+  // Clear entire cart
+  clearCart: async () => {
     try {
-      const response = await fakeStoreApi.get(`/carts/user/${userId}`);
+      const response = await adminApi.delete('/v1/cart/clear');
       return {
-        success: true,
-        data: response.data,
-        message: 'User carts fetched successfully'
+        success: response.data.success !== undefined ? response.data.success : true,
+        data: response.data.data || response.data,
+        message: response.data.message || 'Cart cleared successfully'
       };
     } catch (error) {
       return {
         success: false,
         error: error.response?.data || error.message,
-        message: 'Failed to fetch user carts'
+        message: error.response?.data?.message || 'Failed to clear cart'
       };
     }
   },
 
-  // Add new cart
-  addCart: async (cartData) => {
+  // Apply coupon code to cart
+  applyCoupon: async (couponCode) => {
     try {
-      const response = await fakeStoreApi.post('/carts', cartData);
+      const response = await adminApi.post('/v1/cart/apply-coupon', {
+        couponCode
+      });
       return {
-        success: true,
-        data: response.data,
-        message: 'Cart added successfully'
+        success: response.data.success !== undefined ? response.data.success : true,
+        data: response.data.data || response.data,
+        message: response.data.message || 'Coupon applied successfully'
       };
     } catch (error) {
       return {
         success: false,
         error: error.response?.data || error.message,
-        message: 'Failed to add cart'
+        message: error.response?.data?.message || 'Failed to apply coupon'
       };
     }
   },
 
-  // Update cart
-  updateCart: async (id, cartData) => {
+  // Remove coupon from cart
+  removeCoupon: async () => {
     try {
-      const response = await fakeStoreApi.put(`/carts/${id}`, cartData);
+      const response = await adminApi.post('/v1/cart/remove-coupon');
       return {
-        success: true,
-        data: response.data,
-        message: 'Cart updated successfully'
+        success: response.data.success !== undefined ? response.data.success : true,
+        data: response.data.data || response.data,
+        message: response.data.message || 'Coupon removed successfully'
       };
     } catch (error) {
       return {
         success: false,
         error: error.response?.data || error.message,
-        message: 'Failed to update cart'
-      };
-    }
-  },
-
-  // Delete cart
-  deleteCart: async (id) => {
-    try {
-      const response = await fakeStoreApi.delete(`/carts/${id}`);
-      return {
-        success: true,
-        data: response.data,
-        message: 'Cart deleted successfully'
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.response?.data || error.message,
-        message: 'Failed to delete cart'
+        message: error.response?.data?.message || 'Failed to remove coupon'
       };
     }
   }
@@ -443,37 +433,361 @@ export const cartAPI = {
 // AUTH API CALLS (using your original API)
 
 export const authAPI = {
-  // User login
-  login: async (credentials) => {
+  // Login user with email and password
+  login: async (email, password, twoFactorCode = null) => {
     try {
-      const response = await fakeStoreApi.post('/auth/login', credentials);
+      const response = await adminApi.post('/v1/auth/login', { 
+        email, 
+        password,
+        ...(twoFactorCode && { twoFactorCode })
+      });
       
       // Store token if login successful
       if (response.data.token) {
         localStorage.setItem('token', response.data.token);
       }
+      if (response.data.refreshToken) {
+        localStorage.setItem('refreshToken', response.data.refreshToken);
+      }
       
       return {
         success: true,
         data: response.data,
-        message: 'Login successful'
+        message: response.data.message || 'Login successful'
       };
     } catch (error) {
       return {
         success: false,
         error: error.response?.data || error.message,
-        message: 'Login failed'
+        message: error.response?.data?.message || 'Login failed'
       };
     }
   },
 
-  // User logout (remove token)
-  logout: () => {
-    localStorage.removeItem('token');
-    return {
-      success: true,
-      message: 'Logged out successfully'
-    };
+  // Register a new user account
+  register: async (formData) => {
+    try {
+      const response = await adminApi.post('/v1/auth/register', {
+        userName: formData.userName,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        password: formData.password,
+        confirmPassword: formData.confirmPassword,
+        phoneNumber: formData.phoneNumber,
+        role: 'user', // Always use 'user' role for frontend registration
+        acceptTerms: formData.acceptTerms,
+        acceptPrivacy: formData.acceptPrivacy
+      });
+      
+      return {
+        success: true,
+        data: response.data,
+        message: response.data.message || 'Registration successful'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data || error.message,
+        message: error.response?.data?.message || 'Registration failed'
+      };
+    }
+  },
+
+  // Refresh access token using refresh token
+  refreshToken: async (refreshToken) => {
+    try {
+      const token = refreshToken || localStorage.getItem('refreshToken');
+      const response = await adminApi.post('/v1/auth/refresh-token', { refreshToken: token });
+      
+      if (response.data.token) {
+        localStorage.setItem('token', response.data.token);
+      }
+      if (response.data.refreshToken) {
+        localStorage.setItem('refreshToken', response.data.refreshToken);
+      }
+      
+      return {
+        success: true,
+        data: response.data,
+        message: 'Token refreshed successfully'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data || error.message,
+        message: 'Failed to refresh token'
+      };
+    }
+  },
+
+  // Logout user (clears authentication cookie)
+  logout: async () => {
+    try {
+      const response = await adminApi.post('/v1/auth/logout');
+      localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
+      
+      return {
+        success: true,
+        data: response.data,
+        message: 'Logged out successfully'
+      };
+    } catch (error) {
+      // Still clear local storage even if API call fails
+      localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
+      
+      return {
+        success: false,
+        error: error.response?.data || error.message,
+        message: 'Logout completed locally'
+      };
+    }
+  },
+
+  // Validate current JWT token
+  validateToken: async () => {
+    try {
+      const response = await adminApi.post('/v1/auth/validate-token');
+      return {
+        success: true,
+        data: response.data,
+        message: 'Token is valid'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data || error.message,
+        message: 'Token is invalid'
+      };
+    }
+  },
+
+  // Change password (requires authentication)
+  changePassword: async (currentPassword, newPassword, confirmPassword) => {
+    try {
+      const response = await adminApi.post('/v1/auth/password/change', {
+        currentPassword,
+        newPassword,
+        confirmPassword
+      });
+      
+      return {
+        success: true,
+        data: response.data,
+        message: response.data.message || 'Password changed successfully'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data || error.message,
+        message: error.response?.data?.message || 'Failed to change password'
+      };
+    }
+  },
+
+  // Verify password (for sensitive operations)
+  verifyPassword: async (password) => {
+    try {
+      const response = await adminApi.post('/v1/auth/password/verify', { password });
+      
+      return {
+        success: true,
+        data: response.data,
+        message: 'Password verified successfully'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data || error.message,
+        message: 'Password verification failed'
+      };
+    }
+  },
+
+  // Request password reset (forgot password)
+  forgotPassword: async (email) => {
+    try {
+      const response = await adminApi.post('/v1/auth/password/forgot', { email });
+      
+      return {
+        success: true,
+        data: response.data,
+        message: response.data.message || 'Password reset email sent'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data || error.message,
+        message: error.response?.data?.message || 'Failed to send reset email'
+      };
+    }
+  },
+
+  // Reset password with token (from email)
+  resetPassword: async (email, token, newPassword, confirmPassword) => {
+    try {
+      const response = await adminApi.post('/v1/auth/password/reset', {
+        email,
+        token,
+        newPassword,
+        confirmPassword
+      });
+      
+      return {
+        success: true,
+        data: response.data,
+        message: response.data.message || 'Password reset successfully'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data || error.message,
+        message: error.response?.data?.message || 'Failed to reset password'
+      };
+    }
+  },
+
+  // Verify password reset token validity
+  verifyResetToken: async (email, token) => {
+    try {
+      const response = await adminApi.post('/v1/auth/password/verify-reset-token', {
+        email,
+        token
+      });
+      
+      return {
+        success: true,
+        data: response.data,
+        message: 'Token is valid'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data || error.message,
+        message: 'Invalid or expired token'
+      };
+    }
+  },
+
+  // Send email verification link
+  sendVerificationEmail: async (email) => {
+    try {
+      const response = await adminApi.post('/v1/auth/email/send-verification', { email });
+      
+      return {
+        success: true,
+        data: response.data,
+        message: response.data.message || 'Verification email sent'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data || error.message,
+        message: error.response?.data?.message || 'Failed to send verification email'
+      };
+    }
+  },
+
+  // Verify email address with token
+  verifyEmail: async (email, token) => {
+    try {
+      const response = await adminApi.post('/v1/auth/email/verify', {
+        email,
+        token
+      });
+      
+      return {
+        success: true,
+        data: response.data,
+        message: response.data.message || 'Email verified successfully'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data || error.message,
+        message: error.response?.data?.message || 'Email verification failed'
+      };
+    }
+  },
+
+  // Setup two-factor authentication (returns QR code)
+  setup2FA: async () => {
+    try {
+      const response = await adminApi.post('/v1/auth/2fa/setup');
+      
+      return {
+        success: true,
+        data: response.data,
+        message: '2FA setup initiated'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data || error.message,
+        message: 'Failed to setup 2FA'
+      };
+    }
+  },
+
+  // Confirm and enable two-factor authentication
+  confirm2FA: async (code) => {
+    try {
+      const response = await adminApi.post('/v1/auth/2fa/confirm', { code });
+      
+      return {
+        success: true,
+        data: response.data,
+        message: response.data.message || '2FA enabled successfully'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data || error.message,
+        message: error.response?.data?.message || 'Failed to confirm 2FA'
+      };
+    }
+  },
+
+  // Disable two-factor authentication
+  disable2FA: async (password) => {
+    try {
+      const response = await adminApi.post('/v1/auth/2fa/disable', { password });
+      
+      return {
+        success: true,
+        data: response.data,
+        message: response.data.message || '2FA disabled successfully'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data || error.message,
+        message: error.response?.data?.message || 'Failed to disable 2FA'
+      };
+    }
+  },
+
+  // Get backup codes for two-factor authentication
+  get2FABackupCodes: async () => {
+    try {
+      const response = await adminApi.get('/v1/auth/2fa/backup-codes');
+      
+      return {
+        success: true,
+        data: response.data,
+        message: 'Backup codes retrieved successfully'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data || error.message,
+        message: 'Failed to get backup codes'
+      };
+    }
   },
 
   // Check if user is authenticated
@@ -485,6 +799,11 @@ export const authAPI = {
   // Get current user token
   getToken: () => {
     return localStorage.getItem('token');
+  },
+
+  // Get refresh token
+  getRefreshToken: () => {
+    return localStorage.getItem('refreshToken');
   }
 };
 
@@ -539,12 +858,275 @@ export const utilityAPI = {
   }
 };
 
+// CHECKOUT API CALLS
+
+export const checkoutAPI = {
+  // Get order summary with selected addresses and payment method
+  getSummary: async (checkoutData) => {
+    try {
+      const response = await adminApi.post('/v1/checkout/summary', checkoutData);
+      return {
+        success: response.data.success !== undefined ? response.data.success : true,
+        data: response.data.data || response.data,
+        message: response.data.message || 'Order summary fetched successfully'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data || error.message,
+        message: error.response?.data?.message || 'Failed to fetch order summary'
+      };
+    }
+  },
+
+  // Validate checkout data before processing
+  validateCheckout: async (checkoutData) => {
+    try {
+      const response = await adminApi.post('/v1/checkout/validate', checkoutData);
+      return {
+        success: response.data.success !== undefined ? response.data.success : true,
+        data: response.data.data || response.data,
+        message: response.data.message || 'Checkout data validated successfully'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data || error.message,
+        message: error.response?.data?.message || 'Checkout validation failed'
+      };
+    }
+  },
+
+  // Apply coupon code to checkout
+  applyCoupon: async (couponCode) => {
+    try {
+      const response = await adminApi.post('/v1/checkout/apply-coupon', {
+        couponCode
+      });
+      return {
+        success: response.data.success !== undefined ? response.data.success : true,
+        data: response.data.data || response.data,
+        message: response.data.message || 'Coupon applied successfully'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data || error.message,
+        message: error.response?.data?.message || 'Failed to apply coupon'
+      };
+    }
+  },
+
+  // Process checkout (create order and process payment)
+  processCheckout: async (checkoutData) => {
+    try {
+      const response = await adminApi.post('/v1/checkout/process', checkoutData);
+      return {
+        success: response.data.success !== undefined ? response.data.success : true,
+        data: response.data.data || response.data,
+        message: response.data.message || 'Checkout processed successfully'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data || error.message,
+        message: error.response?.data?.message || 'Failed to process checkout'
+      };
+    }
+  },
+
+  // Get available shipping options
+  getShippingOptions: async () => {
+    try {
+      const response = await adminApi.get('/v1/checkout/shipping-options');
+      return {
+        success: response.data.success !== undefined ? response.data.success : true,
+        data: response.data.data || response.data,
+        message: response.data.message || 'Shipping options fetched successfully'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data || error.message,
+        message: error.response?.data?.message || 'Failed to fetch shipping options'
+      };
+    }
+  }
+};
+
+// ORDER API CALLS
+
+export const orderAPI = {
+  // Create a new order
+  createOrder: async (orderData) => {
+    try {
+      const response = await adminApi.post('/v1/Orders', {
+        items: orderData.items, // Array of { productId, quantity }
+        shippingAddress: orderData.shippingAddress,
+        billingAddress: orderData.billingAddress,
+        shippingCost: orderData.shippingCost || 0,
+        notes: orderData.notes || ''
+      });
+      
+      return {
+        success: response.data.success !== undefined ? response.data.success : true,
+        data: response.data.data || response.data,
+        message: response.data.message || 'Order created successfully'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data || error.message,
+        message: error.response?.data?.message || 'Failed to create order'
+      };
+    }
+  },
+
+  // Get user's orders
+  getOrders: async () => {
+    try {
+      const response = await adminApi.get('/v1/Orders');
+      return {
+        success: response.data.success !== undefined ? response.data.success : true,
+        data: response.data.data || response.data,
+        message: response.data.message || 'Orders fetched successfully'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data || error.message,
+        message: error.response?.data?.message || 'Failed to fetch orders'
+      };
+    }
+  },
+
+  // Get user's orders with pagination
+  getMyOrders: async (page = 1, pageSize = 10) => {
+    try {
+      const response = await adminApi.get(`/v1/Orders/my-orders?page=${page}&pageSize=${pageSize}`);
+      return {
+        success: response.data.success !== undefined ? response.data.success : true,
+        data: response.data.data?.data || response.data.data || response.data,
+        pagination: {
+          page: response.data.data?.page || page,
+          pageSize: response.data.data?.pageSize || pageSize,
+          total: response.data.data?.total || 0
+        },
+        message: response.data.message || 'Orders retrieved successfully'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data || error.message,
+        message: error.response?.data?.message || 'Failed to fetch orders'
+      };
+    }
+  },
+
+  // Get order by ID
+  getOrderById: async (orderId) => {
+    try {
+      const response = await adminApi.get(`/v1/Orders/${orderId}`);
+      return {
+        success: response.data.success !== undefined ? response.data.success : true,
+        data: response.data.data || response.data,
+        message: response.data.message || 'Order fetched successfully'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data || error.message,
+        message: error.response?.data?.message || 'Failed to fetch order'
+      };
+    }
+  }
+};
+
+// WISHLIST API CALLS
+
+export const wishlistAPI = {
+  // Add product to wishlist
+  addToWishlist: async (productId) => {
+    try {
+      const response = await adminApi.post(`/v1/wishlist/add/${productId}`);
+      return {
+        success: response.data.success !== undefined ? response.data.success : true,
+        data: response.data.data || response.data,
+        message: response.data.message || 'Product added to wishlist'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data || error.message,
+        message: error.response?.data?.message || 'Failed to add to wishlist'
+      };
+    }
+  },
+
+  // Remove product from wishlist
+  removeFromWishlist: async (productId) => {
+    try {
+      const response = await adminApi.delete(`/v1/wishlist/remove/${productId}`);
+      return {
+        success: response.data.success !== undefined ? response.data.success : true,
+        data: response.data.data || response.data,
+        message: response.data.message || 'Product removed from wishlist'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data || error.message,
+        message: error.response?.data?.message || 'Failed to remove from wishlist'
+      };
+    }
+  },
+
+  // Get user's wishlist
+  getWishlist: async () => {
+    try {
+      const response = await adminApi.get('/v1/wishlist');
+      return {
+        success: response.data.success !== undefined ? response.data.success : true,
+        data: response.data.data || response.data,
+        message: response.data.message || 'Wishlist fetched successfully'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data || error.message,
+        message: error.response?.data?.message || 'Failed to fetch wishlist'
+      };
+    }
+  },
+
+  // Clear entire wishlist
+  clearWishlist: async () => {
+    try {
+      const response = await adminApi.delete('/v1/wishlist/clear');
+      return {
+        success: response.data.success !== undefined ? response.data.success : true,
+        data: response.data.data || response.data,
+        message: response.data.message || 'Wishlist cleared successfully'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data || error.message,
+        message: error.response?.data?.message || 'Failed to clear wishlist'
+      };
+    }
+  }
+};
+
 // Export everything as default
 export default {
   productAPI,
   categoryAPI,
   cartAPI,
   authAPI,
+  checkoutAPI,
+  orderAPI,
+  wishlistAPI,
   utilityAPI,
 };
 

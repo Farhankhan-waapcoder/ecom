@@ -205,13 +205,13 @@ const CartDropdown = ({ isOpen, onClose }) => {
                 </div>
 
                 <button
-                  // onClick={handleCheckout}
+                  onClick={handleCheckout}
                   className="w-full bg-gradient-to-r from-[#007580] to-[#005a63] text-white py-2 rounded-lg font-medium hover:shadow-lg transition-all duration-200"
                 >
                   Checkout
                 </button>
 
-                <button
+                {/* <button
                   onClick={() => {
                     navigate("/my-cart");
                     onClose();
@@ -219,7 +219,7 @@ const CartDropdown = ({ isOpen, onClose }) => {
                   className="w-full mt-2 text-[#007580] hover:text-[#005a63] text-sm font-medium"
                 >
                   View Full Cart
-                </button>
+                </button> */}
               </div>
             </>
           )}
