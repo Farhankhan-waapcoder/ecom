@@ -1,11 +1,12 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Grid, List, Filter, X } from "lucide-react";
+import toast from 'react-hot-toast';
 
-import allProducts from "../data/products";
 import ProductCard from "../components/ProductCard";
 import HorizontalProductCard from "../components/HorizontalProductCard";
 import FilterSidebar from "../components/FilterSidebar";
+import { productAPI } from "../services/Api.js";
 
 export default function Search() {
   const { query } = useParams();
@@ -13,7 +14,10 @@ export default function Search() {
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [viewMode, setViewMode] = useState("grid");
-  const [sortBy, setSortBy] = useState("featured");
+  const [sortBy, setSortBy] = useState("newest");
+  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(12);
 
   const [filters, setFilters] = useState({
     brands: [],
@@ -23,15 +27,61 @@ export default function Search() {
   });
 
   const uniqueBrands = [
-    ...new Set(allProducts.map((product) => product.brand)),
+    ...new Set(products.map((product) => product.brand)),
   ];
 
+  // Fetch products from API with search query
   useEffect(() => {
-    const matched = allProducts.filter((product) =>
-      product.name.toLowerCase().includes(query.toLowerCase())
-    );
-    setProducts(matched);
-  }, [query]);
+    const fetchProducts = async () => {
+      if (!query) return;
+      
+      try {
+        setLoading(true);
+        // Use the PublicProducts/search endpoint with search query
+        const result = await productAPI.getProductsPaginated(currentPage, pageSize, sortBy);
+        
+        if (result.success) {
+          // Format products from API
+          const formattedProducts = result.data
+            .filter(item => 
+              item.name.toLowerCase().includes(query.toLowerCase()) ||
+              item.description?.toLowerCase().includes(query.toLowerCase()) ||
+              item.sku?.toLowerCase().includes(query.toLowerCase())
+            )
+            .map(item => ({
+              id: item.id || item.productId,
+              name: item.name,
+              title: item.name,
+              image: item.imageUrls && item.imageUrls.length > 0 
+                ? item.imageUrls[0]
+                : item.primaryImageUrl || '/placeholder.jpg',
+              price: parseFloat(item.sellingPrice || item.basePrice),
+              originalPrice: item.basePrice !== item.sellingPrice ? parseFloat(item.basePrice) : null,
+              discount: item.discountPercentage || 0,
+              category: item.categoryName || 'Uncategorized',
+              brand: item.brandName || item.vendorName || 'No Brand',
+              rating: item.averageRating || 0,
+              ratingCount: item.totalReviews || 0,
+              stock: item.stockQuantity,
+              isOnSale: item.isOnSale,
+              description: item.shortDescription || item.description,
+              sku: item.sku
+            }));
+          
+          setProducts(formattedProducts);
+        } else {
+          toast.error('Failed to fetch products');
+        }
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        toast.error('Failed to load search results');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [query, currentPage, pageSize, sortBy]);
 
   useEffect(() => {
     let filtered = [...products];
@@ -43,7 +93,7 @@ export default function Search() {
 
     // Price filter
     filtered = filtered.filter((p) => {
-      const price = parseFloat(p.price.replace("$", ""));
+      const price = p.price;
       return (
         price >= filters.priceRange[0] && price <= filters.priceRange[1]
       );
@@ -62,26 +112,23 @@ export default function Search() {
     // Sorting
     switch (sortBy) {
       case "price-low":
-        filtered.sort(
-          (a, b) =>
-            parseFloat(a.price.replace("$", "")) -
-            parseFloat(b.price.replace("$", ""))
-        );
+      case "priceAsc":
+        filtered.sort((a, b) => a.price - b.price);
         break;
       case "price-high":
-        filtered.sort(
-          (a, b) =>
-            parseFloat(b.price.replace("$", "")) -
-            parseFloat(a.price.replace("$", ""))
-        );
+      case "priceDesc":
+        filtered.sort((a, b) => b.price - a.price);
         break;
       case "rating":
         filtered.sort((a, b) => b.rating - a.rating);
         break;
       case "name":
+      case "nameAsc":
         filtered.sort((a, b) => a.name.localeCompare(b.name));
         break;
+      case "newest":
       default:
+        // Keep default order from API
         break;
     }
 
@@ -138,7 +185,7 @@ return (
                 onChange={(e) => setSortBy(e.target.value)}
                 className="border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-purple-500 dark:focus:border-purple-400"
               >
-                <option value="featured">Featured</option>
+                <option value="newest">Newest</option>
                 <option value="price-low">Price: Low to High</option>
                 <option value="price-high">Price: High to Low</option>
                 <option value="rating">Highest Rated</option>
@@ -195,12 +242,17 @@ return (
 
           {/* Products */}
           <div className="flex-1">
-            {filteredProducts.length === 0 ? (
+            {loading ? (
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 dark:border-purple-400 mx-auto mb-4"></div>
+                <p className="text-gray-600 dark:text-slate-400">Searching for products...</p>
+              </div>
+            ) : filteredProducts.length === 0 ? (
               <div className="text-center py-12">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-slate-100 mb-2">
                   No products found
                 </h3>
-                <p className="text-gray-600 dark:text-slate-400">Try adjusting your filters</p>
+                <p className="text-gray-600 dark:text-slate-400">Try adjusting your filters or search query</p>
               </div>
             ) : (
               <div

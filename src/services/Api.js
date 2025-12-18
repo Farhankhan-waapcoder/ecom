@@ -67,16 +67,16 @@ export const productAPI = {
   },
 
   // Get products with pagination from new API
-  getProductsPaginated: async (page = 1, pageSize = 12, sort = 'newest') => {
+  getProductsPaginated: async (page = 1, pageSize = 12, sortBy = 'newest') => {
     try {
-      const response = await adminApi.get(`/v1/Products?page=${page}&pageSize=${pageSize}&sort=${sort}`);
+      const response = await adminApi.get(`/v1/PublicProducts/search?sortBy=${sortBy}&page=${page}&pageSize=${pageSize}`);
       return {
         success: response.data.success,
         data: response.data.data.data,
         pagination: {
           page: response.data.data.page,
           pageSize: response.data.data.pageSize,
-          totalPages: response.data.data.totalPages
+          total: response.data.data.total
         },
         message: response.data.message
       };
@@ -85,6 +85,25 @@ export const productAPI = {
         success: false,
         error: error.response?.data || error.message,
         message: 'Failed to fetch paginated products'
+      };
+    }
+  },
+
+  // Get trending products
+  getTrendingProducts: async (limit = 5) => {
+    try {
+      const response = await adminApi.get(`/v1/PublicProducts/trending?limit=${limit}`);
+      return {
+        success: response.data.success,
+        data: response.data.data.data,
+        total: response.data.data.total,
+        message: response.data.message
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data || error.message,
+        message: 'Failed to fetch trending products'
       };
     }
   },

@@ -133,24 +133,30 @@ export default function Listings({ isLoggedIn, setIsLoggedIn, currentUser: propC
     const fetchTopPicks = async () => {
       try {
         setLoadingTopPicks(true);
-        const result = await productAPI.getAllProducts();
+        const result = await productAPI.getTrendingProducts(5);
         
         if (result.success) {
-          const topRatedProducts = result.data
-            .filter(product => product.rating?.rate >= 4.0)
-            .sort((a, b) => (b.rating?.rate || 0) - (a.rating?.rate || 0))
-            .slice(0, 5)
-            .map(product => ({
-              ...product,
-              name: product.title,
-              image: product.image,
-              price: product.price,
-              rating: product.rating?.rate || 0,
-              ratingCount: product.rating?.count || 0,
-              originalRating: product.rating
-            }));
+          const formattedProducts = result.data.map(item => ({
+            id: item.id || item.productId,
+            name: item.name,
+            title: item.name,
+            image: item.imageUrls && item.imageUrls.length > 0 
+              ? item.imageUrls[0]
+              : item.primaryImageUrl || getRandomPlaceholder(item.id),
+            price: parseFloat(item.sellingPrice || item.basePrice),
+            originalPrice: item.basePrice !== item.sellingPrice ? parseFloat(item.basePrice) : null,
+            discount: item.discountPercentage || 0,
+            category: item.categoryName || 'Uncategorized',
+            brand: item.brandName || item.vendorName || 'No Brand',
+            rating: item.averageRating || 0,
+            ratingCount: item.totalReviews || 0,
+            stock: item.stockQuantity,
+            isOnSale: item.isOnSale,
+            description: item.shortDescription || item.description,
+            sku: item.sku
+          }));
           
-          setTopPicks(topRatedProducts);
+          setTopPicks(formattedProducts);
         } else {
           throw new Error(result.message);
         }
@@ -225,8 +231,9 @@ export default function Listings({ isLoggedIn, setIsLoggedIn, currentUser: propC
         
         if (result.success) {
           // Update pagination info
-          setTotalPages(result.pagination.totalPages);
-          setTotalProducts(result.pagination.totalPages * pageSize); // Approximate total
+          const calculatedTotalPages = Math.ceil(result.pagination.total / pageSize);
+          setTotalPages(calculatedTotalPages);
+          setTotalProducts(result.pagination.total);
           
           // Format products from new API structure
           const formattedProducts = result.data.map((item, index) => ({
