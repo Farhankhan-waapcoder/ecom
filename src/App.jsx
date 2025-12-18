@@ -94,8 +94,7 @@ export default function App() {
           <Route path="/orders" element={<OrderHistory />} />
           <Route path="/order/:id" element={<OrderDetails />} />
           <Route path="/category/:categoryId/subcategories" element={<SubCategories />} />
-          <Route path="/category/:categoryId" element={<Category />} />
-          <Route path="/categories/:name" element={<Category />} />
+          <Route path="/category/:slug" element={<Category />} />
           <Route
             path="/product/:id"
             element={

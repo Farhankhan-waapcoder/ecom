@@ -41,7 +41,6 @@ export default function Search() {
         const result = await productAPI.getProductsPaginated(currentPage, pageSize, sortBy);
         
         if (result.success) {
-          // Format products from API
           const formattedProducts = result.data
             .filter(item => 
               item.name.toLowerCase().includes(query.toLowerCase()) ||
@@ -67,7 +66,6 @@ export default function Search() {
               description: item.shortDescription || item.description,
               sku: item.sku
             }));
-          
           setProducts(formattedProducts);
         } else {
           toast.error('Failed to fetch products');

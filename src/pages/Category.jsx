@@ -9,7 +9,7 @@ import { Link } from "react-router-dom";
 import toast from 'react-hot-toast';
 
 export default function Category() {
-  const { name, categoryId } = useParams(); // Accept both name and categoryId
+  const { slug } = useParams(); // Use slug from route
   const [categoryData, setCategoryData] = useState(null);
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
@@ -32,23 +32,32 @@ export default function Category() {
       setError('');
       
       try {
-        // If categoryId is provided, fetch products by category ID (from subcategories)
-        if (categoryId) {
-          const result = await productAPI.getProductsByCategory(categoryId);
+        if (slug) {
+          // Fetch products by category slug using public API
+          const result = await productAPI.getProductsByCategorySlug(slug, sortBy, 1, 50);
           
           if (result.success && result.data) {
-            // Format products from the new API
-            const formattedProducts = result.data.map(product => ({
+            // Set category info
+            if (result.data.category) {
+              setCategoryData({
+                categoryName: result.data.category.name,
+                categoryImage: result.data.category.imageUrl || '/placeholder-category.jpg',
+                description: result.data.category.description
+              });
+            }
+            
+            // Format products from the API
+            const formattedProducts = result.data.data.map(product => ({
               id: product.id || product.productId,
               title: product.name,
-              price: parseFloat(product.sellingPrice || product.basePrice),
-              originalPrice: product.basePrice !== product.sellingPrice ? parseFloat(product.basePrice) : null,
+              price: product.sellingPrice / 100, // Convert cents to dollars
+              originalPrice: product.basePrice !== product.sellingPrice ? product.basePrice / 100 : null,
               discount: product.discountPercentage || 0,
               image: product.imageUrls && product.imageUrls.length > 0 
                 ? product.imageUrls[0]
                 : product.primaryImageUrl || '/placeholder-product.jpg',
               brand: product.brandName || product.vendorName || 'No Brand',
-              category: product.categoryName || 'Category',
+              category: product.categoryName || result.data.category?.name || 'Category',
               rating: product.averageRating || 0,
               ratingCount: product.totalReviews || 0,
               stock: product.stockQuantity || 0,
@@ -57,58 +66,13 @@ export default function Category() {
               sku: product.sku
             }));
             
-            setCategoryData({
-              categoryName: formattedProducts[0]?.category || 'Category',
-              categoryImage: formattedProducts[0]?.image || '/placeholder-category.jpg'
-            });
             setProducts(formattedProducts);
             setFilteredProducts(formattedProducts);
           } else {
             throw new Error(result.message || 'Failed to fetch products');
           }
-        } else if (name) {
-          // Fallback to old method using category name
-          const response = await adminApi.get('/menu');
-          
-          if (response.data) {
-            // Find the matching category (case-insensitive)
-            const category = response.data.find(
-              cat => cat.categoryName.toLowerCase() === name.replace(/-/g, ' ').toLowerCase()
-            );
-
-            if (category) {
-              setCategoryData(category);
-              
-              // Extract and validate products from the category's brands
-              const categoryProducts = category.brands
-                .flatMap(brand => 
-                  brand.products
-                    // Filter out invalid products
-                    .filter(product => 
-                      product.productID && 
-                      product.productName && 
-                      product.productImage && 
-                      product.price
-                    )
-                    .map(product => ({
-                      id: product.productID,
-                      title: product.productName,
-                      price: parseFloat(product.price),
-                      image: `https://adminecommerce.waapcoders.in${product.productImage}`, // Add base URL
-                      brand: brand.brandName || "Generic",
-                      category: category.categoryName,
-                      rating: Math.floor(Math.random() * 5) + 1,
-                      stock: 10
-                    }))
-                )
-                .filter(Boolean); // Remove any undefined entries
-              
-              setProducts(categoryProducts);
-              setFilteredProducts(categoryProducts);
-            } else {
-              setError('Category not found');
-            }
-          }
+        } else {
+          setError('Category not found');
         }
       } catch (error) {
         console.error('Failed to fetch category data:', error);
@@ -120,7 +84,7 @@ export default function Category() {
     };
 
     fetchCategoryData();
-  }, [name, categoryId]);
+  }, [slug, sortBy]);
 
   // Get unique brands from the category's products
   const uniqueBrands = [...new Set(products.map(p => p.brand).filter(Boolean))];
@@ -214,7 +178,7 @@ export default function Category() {
               </Link>
               <span className="text-gray-400 dark:text-gray-500 mx-2">›</span>
               <span className="text-gray-700 dark:text-gray-200 font-medium capitalize">
-                {categoryData?.categoryName || (name ? name.replace(/-/g, ' ') : 'Category')}
+                {categoryData?.categoryName || (slug ? slug.replace(/-/g, ' ') : 'Category')}
               </span>
             </nav>
           </div>
@@ -225,7 +189,7 @@ export default function Category() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white capitalize">
-                {categoryData?.categoryName || (name ? name.replace('-', ' ') : 'Category')} Products
+                {categoryData?.categoryName || (slug ? slug.replace(/-/g, ' ') : 'Category')} Products
               </h1>
               <p className="text-gray-600 dark:text-gray-300 mt-1">
                 {loading ? 'Loading...' : `${filteredProducts.length} products found`}

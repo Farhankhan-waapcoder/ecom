@@ -197,6 +197,26 @@ export const productAPI = {
       };
     }
   },
+
+  // Get products by category slug (public API)
+  getProductsByCategorySlug: async (slug, sortBy = 'newest', page = 1, pageSize = 20) => {
+    try {
+      const response = await adminApi.get(`/v1/PublicProducts/category/${slug}`, {
+        params: { sortBy, page, pageSize }
+      });
+      return {
+        success: response.data.success,
+        data: response.data.data,
+        message: response.data.message
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data || error.message,
+        message: 'Failed to fetch products by category'
+      };
+    }
+  },
 };
 
 // CATEGORIES API CALLS
@@ -234,6 +254,25 @@ export const categoryAPI = {
         success: false,
         error: error.response?.data || error.message,
         message: 'Failed to fetch categories'
+      };
+    }
+  },
+
+  // Get public categories (no auth required)
+  getCategoriesPublic: async () => {
+    try {
+      const response = await adminApi.get('/v1/PublicProducts/categories');
+      return {
+        success: response.data.success,
+        data: response.data.data.data, // Array of categories
+        total: response.data.data.total,
+        message: response.data.message
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data || error.message,
+        message: 'Failed to fetch public categories'
       };
     }
   },
