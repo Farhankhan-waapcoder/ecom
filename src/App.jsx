@@ -22,6 +22,7 @@ import OrderDetails from "./pages/OrderDetails.jsx";
 import OrderHistory from "./pages/OrderHistory.jsx";
 import Category from "./pages/Category.jsx";
 import SubCategories from "./pages/SubCategories.jsx";
+import Profile from "./pages/Profile.jsx";
 import { ThemeProvider } from './contexts/ThemeContext';
 import CookieConsent from "./components/CookieConsent.jsx";
 import Chatbot from "./components/Chatbot.jsx";
@@ -89,7 +90,8 @@ export default function App() {
           <Route path="/shipping-delivery" element={<ShippingDelivery />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/search/:query" element={<Search />} />
-          <Route path="/order-history" element={<OrderHistory />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/orders" element={<OrderHistory />} />
           <Route path="/order/:id" element={<OrderDetails />} />
           <Route path="/category/:categoryId/subcategories" element={<SubCategories />} />
           <Route path="/category/:categoryId" element={<Category />} />

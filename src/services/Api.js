@@ -1118,6 +1118,45 @@ export const wishlistAPI = {
   }
 };
 
+// PROFILE API CALLS
+export const profileAPI = {
+  // Get user profile
+  getProfile: async () => {
+    try {
+      const response = await adminApi.get('/v1/profile');
+      return {
+        success: response.data.success !== undefined ? response.data.success : true,
+        data: response.data.data || response.data,
+        message: response.data.message || 'Profile retrieved successfully'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data || error.message,
+        message: error.response?.data?.message || 'Failed to fetch profile'
+      };
+    }
+  },
+
+  // Update user profile
+  updateProfile: async (profileData) => {
+    try {
+      const response = await adminApi.put('/v1/profile', profileData);
+      return {
+        success: response.data.success !== undefined ? response.data.success : true,
+        data: response.data.data || response.data,
+        message: response.data.message || 'Profile updated successfully'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data || error.message,
+        message: error.response?.data?.message || 'Failed to update profile'
+      };
+    }
+  }
+};
+
 // Export everything as default
 export default {
   productAPI,
@@ -1127,6 +1166,7 @@ export default {
   checkoutAPI,
   orderAPI,
   wishlistAPI,
+  profileAPI,
   utilityAPI,
 };
 

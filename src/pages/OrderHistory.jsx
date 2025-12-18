@@ -18,6 +18,7 @@ export default function OrderHistory() {
   const fetchOrders = async () => {
     setLoading(true);
     try {
+      console.log('Fetching orders with pagination:', pagination);
       const result = await orderAPI.getMyOrders(pagination.page, pagination.pageSize);
       
       if (result.success) {

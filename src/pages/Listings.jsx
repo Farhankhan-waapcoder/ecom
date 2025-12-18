@@ -448,7 +448,7 @@ export default function Listings({ isLoggedIn, setIsLoggedIn, currentUser: propC
         )}
 
         {/* Pagination controls */}
-        {!loadingProducts && totalPages > 1 && (
+        {!loadingProducts && (
           <div className="mt-8 flex justify-center items-center gap-2">
             <button
               onClick={() => handlePageChange(currentPage - 1)}
@@ -534,15 +534,15 @@ export default function Listings({ isLoggedIn, setIsLoggedIn, currentUser: propC
           </div>
         )}
 
-        {/* Loading indicator for background updates */}
-        {loadingProducts && (
+        Loading indicator for background updates
+        {/* {loadingProducts && (
           <div className="fixed bottom-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg">
             <div className="flex items-center space-x-2">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
               <span className="text-sm">Loading products...</span>
             </div>
           </div>
-        )}
+        )} */}
       </main>
     </div>
   );
