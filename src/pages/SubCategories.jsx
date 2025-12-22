@@ -5,7 +5,7 @@ import { categoryAPI } from "../services/Api.js";
 import { ArrowLeft, Grid, List, ChevronRight } from 'lucide-react';
 
 export default function SubCategories() {
-  const { categoryId } = useParams();
+  const { slug } = useParams();  // Changed from categoryId to slug
   const navigate = useNavigate();
   
   const [subCategories, setSubCategories] = useState([]);
@@ -16,8 +16,8 @@ export default function SubCategories() {
 
   useEffect(() => {
     const fetchSubCategories = async () => {
-      if (!categoryId) {
-        setError("Category ID not found");
+      if (!slug) {
+        setError("Category slug not found");
         setLoading(false);
         return;
       }
@@ -26,10 +26,10 @@ export default function SubCategories() {
         setLoading(true);
         setError(null);
 
-        // First, fetch all categories to get parent category info
+        // First, fetch all categories to get parent category info by slug
         const categoriesResult = await categoryAPI.getCategoriesFromAPI();
         if (categoriesResult.success) {
-          const parentCat = categoriesResult.data.find(cat => cat.id === categoryId);
+          const parentCat = categoriesResult.data.find(cat => cat.slug === slug);
           if (parentCat) {
             setParentCategory({
               id: parentCat.id,
@@ -37,21 +37,23 @@ export default function SubCategories() {
               description: parentCat.description,
               image: parentCat.imageUrl || parentCat.iconUrl
             });
+            
+            // Fetch subcategories using the found ID
+            const result = await categoryAPI.getSubCategories(parentCat.id);
+            
+            if (result.success && result.data) {
+              // Filter only active subcategories
+              const activeSubCategories = result.data
+                .filter(subCat => subCat.isActive)
+                .sort((a, b) => a.displayOrder - b.displayOrder);
+              
+              setSubCategories(activeSubCategories);
+            } else {
+              throw new Error(result.message || 'Failed to fetch subcategories');
+            }
+          } else {
+            throw new Error('Category not found');
           }
-        }
-
-        // Fetch subcategories
-        const result = await categoryAPI.getSubCategories(categoryId);
-        
-        if (result.success && result.data) {
-          // Filter only active subcategories
-          const activeSubCategories = result.data
-            .filter(subCat => subCat.isActive)
-            .sort((a, b) => a.displayOrder - b.displayOrder);
-          
-          setSubCategories(activeSubCategories);
-        } else {
-          throw new Error(result.message || 'Failed to fetch subcategories');
         }
       } catch (err) {
         console.error("Failed to fetch subcategories:", err);
@@ -63,11 +65,11 @@ export default function SubCategories() {
     };
 
     fetchSubCategories();
-  }, [categoryId]);
+  }, [slug]);  // Changed dependency from categoryId to slug
 
   const handleSubCategoryClick = (subCategory) => {
     // Navigate to category page with subcategory filter
-    navigate(`/category/${subCategory.id}`);
+    navigate(`/category/${subCategory.slug}`);
   };
 
   const handleBack = () => {

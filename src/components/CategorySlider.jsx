@@ -87,7 +87,7 @@ export default function CategorySlider({ categories, title }) {
             <div
               key={category.id}
               className="flex-shrink-0 w-full sm:w-1/2 md:w-1/3 lg:w-1/4 min-w-[200px] cursor-pointer group" 
-              onClick={() => navigate(`/category/${category.id}/subcategories`)}
+              onClick={() => navigate(`/category/${category.slug}/subcategories`)}
             >
               <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group-hover:scale-105">
                 <div className="relative">
