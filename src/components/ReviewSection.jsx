@@ -108,7 +108,7 @@ export default function ReviewSection({ onSubmit, onBack, formData }) {
         localStorage.removeItem(key);
 
         toast.success(result.message || "Order placed successfully!");
-        navigate("/order-history");
+        navigate("/orders");
         onSubmit(localOrder);
       } else {
         throw new Error(result.message || "Failed to create order");
